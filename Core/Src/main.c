@@ -222,8 +222,10 @@ static void MX_GPIO_Init(void)
  * PARSING HEADER, Used in FW CONFIG - READ/WRITE Process
  **********************************************************/
 #define CFG_LENGTH 				10
-#define CFG_HEADER_NUM 			5
+#define CFG_HEADER_NUM 			6
 #define CFG_HEADER_CHARS_LEN 	5
+#define CFG_HEADER_READ 		5
+#define STRLENMAX				100
 
 static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 {
@@ -232,8 +234,11 @@ static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 	"{CF2:",
 	"{CF3:",
 	"{CF4:",
+	"{RD1}"
 };
 
+
+int32_t i32_res[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
 
 
 /*********************************************************************
@@ -292,41 +297,49 @@ static void vShell_cmdParse(char *input)
 			uint8_t u8_cnt 		= 0;
 
 			char str_res[20];
-			int32_t i32_res[CFG_LENGTH];
 
 			puts("\r\n");
 
-			while (*pChar)
+			if (u8_idx < CFG_HEADER_READ)
 			{
-				if(*pChar == ';')
+				/* WRITE HEADER */
+				while (*pChar)
 				{
-					memset(&str_res[0], 0, 10);
-					memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
-					i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
-					printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+					if(*pChar == ';')
+					{
+						memset(&str_res[0], 0, 10);
+						memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
+						i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
+						printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
 
-					u8_stop = u8_start + 1;
-					u8_cnt++;
+						u8_stop = u8_start + 1;
+						u8_cnt++;
+					}
+					else if (*pChar == '}')
+					{
+						memset(&str_res[0], 0, 10);
+						memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
+						i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
+						printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+
+						u8_cnt++;
+						break;
+					}
+
+					pChar++;
+					u8_start++;
 				}
-				else if (*pChar == '}')
-				{
-					memset(&str_res[0], 0, 10);
-					memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
-					i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
-					printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+				break;
 
-					u8_cnt++;
-
-					puts("break\r\n");
-					break;
-				}
-
-				pChar++;
-				u8_start++;
 			}
-
-			printf("idx: %d\r\n", u8_idx);
-			break;
+			else
+			{
+				/* READ HEADER */
+				char sendStr[STRLENMAX];
+				memset (sendStr, 0, STRLENMAX);
+				snprintf(sendStr, STRLENMAX, "READ:%ld;%ld;%ld",i32_res[0] , i32_res[1], i32_res[2]);
+				HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
+			}
 		}
 	}
 
