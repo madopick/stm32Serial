@@ -56,7 +56,7 @@ static void stdin_callback(uint8_t *u8p_buffer, uint16_t u16_size)
 
 	if((u8p_buffer[u16_size - 1] == '\n')&&(u8p_buffer[u16_size - 2]== '\r'))
 	{
-		uartProcessing (u8arr_uart, u8idx);
+		uartProcessing (u8arr_uart, u8idx - 2);
 		memset(u8arr_uart, 0, UART_BUF_SZ);
 		u8idx = 0;
 	}

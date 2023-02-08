@@ -216,9 +216,128 @@ static void MX_GPIO_Init(void)
 }
 
 
+
+
+/**********************************************************
+ * PARSING HEADER, Used in FW CONFIG - READ/WRITE Process
+ **********************************************************/
+#define CFG_LENGTH 				10
+#define CFG_HEADER_NUM 			5
+#define CFG_HEADER_CHARS_LEN 	5
+
+static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
+{
+	"{MSG:",
+	"{CF1:",
+	"{CF2:",
+	"{CF3:",
+	"{CF4:",
+};
+
+
+
+/*********************************************************************
+ * @name	: tinysh_dec
+ * @brief	: string to decimal conversion (up to 15 chars).
+ *********************************************************************/
+unsigned long tinysh_dec(char *s)
+{
+  unsigned long res=0;
+  uint8_t index = 0;
+  int8_t min	= 1;
+
+  while(*s)
+  {
+	  //printf("%c\r\n",*s);
+
+	  res*=10;
+
+	  if((*s == '-')&&(index == 0))
+		  min = -1;
+	  else if((*s == '0')&&(index == 0))
+		  res = 0;
+	  else if(*s>='0' && *s<='9')
+		  res+=*s-'0';
+	  else
+		  break;
+
+	  s++;
+	  index++;
+
+	  if(index > 15)
+	  {
+		 break;
+	  }
+  }
+
+  return (res * min);
+}
+
+
+
+/********************************************************
+ * 	Parsing incoming message						   	*
+ * 	Example: {MSG:1;23;21009}						*
+ ********************************************************/
+static void vShell_cmdParse(char *input)
+{
+	for(uint8_t u8_idx = 0; u8_idx < CFG_HEADER_NUM; u8_idx++)
+	{
+		if(!memcmp(input,(char*)&str_cfg_header[u8_idx][0], CFG_HEADER_CHARS_LEN))
+		{
+			char *pChar 		= &input[CFG_HEADER_CHARS_LEN];
+			char *pChar2 		= &input[CFG_HEADER_CHARS_LEN];
+			uint8_t u8_start 	= 0;
+			uint8_t u8_stop 	= 0;
+			uint8_t u8_cnt 		= 0;
+
+			char str_res[20];
+			int32_t i32_res[CFG_LENGTH];
+
+			puts("\r\n");
+
+			while (*pChar)
+			{
+				if(*pChar == ';')
+				{
+					memset(&str_res[0], 0, 10);
+					memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
+					i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
+					printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+
+					u8_stop = u8_start + 1;
+					u8_cnt++;
+				}
+				else if (*pChar == '}')
+				{
+					memset(&str_res[0], 0, 10);
+					memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
+					i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
+					printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+
+					u8_cnt++;
+
+					puts("break\r\n");
+					break;
+				}
+
+				pChar++;
+				u8_start++;
+			}
+
+			printf("idx: %d\r\n", u8_idx);
+			break;
+		}
+	}
+
+}
+
+
+
 void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size)
 {
 	printf("UART RX(%d): %s\r\n", u16_size, (char*)u8p_buffer);
+	vShell_cmdParse((char*)u8p_buffer);
 }
 
 
