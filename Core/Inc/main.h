@@ -43,6 +43,10 @@ extern "C" {
 void Error_Handler(void);
 void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size);
 
+
+#define RX_EVENT_CB
+
+
 /* Private defines -----------------------------------------------------------*/
 #define B1_Pin 				GPIO_PIN_13
 #define B1_GPIO_Port 		GPIOC

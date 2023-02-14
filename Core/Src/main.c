@@ -140,6 +140,12 @@ void SystemClock_Config(void)
   }
 }
 
+
+#ifdef RX_EVENT_CB
+static uint8_t u8arr_eventBuff[UART_BUF_SZ];
+static uint8_t u8arr_uartEvent[UART_BUF_SZ];
+#endif
+
 /**
   * @brief USART2 Initialization Function
   * @param None
@@ -161,8 +167,11 @@ static void MX_USART2_UART_Init(void)
     Error_Handler();
   }
 
+#ifdef RX_EVENT_CB
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u8arr_eventBuff, UART_BUF_SZ);
+#else
   serial_init();
-
+#endif
 
 }
 
@@ -352,6 +361,88 @@ void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size)
 	//printf("UART RX(%d): %s\r\n", u16_size, (char*)u8p_buffer);
 	vShell_cmdParse((char*)u8p_buffer);
 }
+
+
+
+
+
+
+
+/*****************************************************************
+ * @name 	vUAFE_uart_handle
+ * @brief	handle afe uart data copy
+ ****************************************************************/
+static void vUAFE_uart_handle(uint16_t Size)
+{
+	static uint16_t u16_oldPos = 0;
+	static uint16_t u16_lenCnt = 0;
+	uint16_t u16_numData;
+
+	//printf("S(%d): %s\r\n", Size, (char*)u8arr_eventBuff);
+
+
+	/* Check if number of received data in reception buffer has changed */
+	if (Size != u16_oldPos)
+	{
+		if (Size > u16_oldPos)
+		{
+			/* Current position is higher than previous one */
+			u16_numData = Size - u16_oldPos;
+			memcpy(&u8arr_uartEvent[u16_lenCnt],&u8arr_eventBuff[u16_oldPos],u16_numData);
+			u16_lenCnt += u16_numData;
+		}
+		else
+		{
+			/* End of buffer has been reached */
+			u16_numData = UART_BUF_SZ - u16_oldPos;
+
+			memcpy (&u8arr_uartEvent[u16_lenCnt], 			// copy data in that remaining space
+					&u8arr_eventBuff[u16_oldPos],
+					u16_numData);
+
+			u16_lenCnt += u16_numData;
+
+			memcpy (&u8arr_uartEvent[u16_lenCnt], 			// copy the remaining data
+					&u8arr_eventBuff[0],
+					Size);
+
+			u16_lenCnt += Size;
+		}
+
+		/* Check for ready to process */
+		if((u8arr_uartEvent[u16_lenCnt - 1] == '\n')&&(u8arr_uartEvent[u16_lenCnt - 2]== '\r'))
+		{
+			uartProcessing (u8arr_uartEvent, u16_lenCnt - 2); // remove \r & \n
+			memset(u8arr_uartEvent, 0, UART_BUF_SZ);
+			u16_lenCnt = 0;
+		}
+
+	}
+
+
+	u16_oldPos = Size;
+}
+
+
+
+/*****************************************************************
+ * @name HAL_UARTEx_RxEventCallback
+ * @brief
+ ****************************************************************/
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+
+#ifdef RX_EVENT_CB
+	if (huart->Instance == USART2)
+	{
+		vUAFE_uart_handle(Size);
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u8arr_eventBuff, UART_BUF_SZ);
+	}
+#endif
+
+}
+
+
 
 
 /**

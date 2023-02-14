@@ -147,7 +147,11 @@ void SysTick_Handler(void)
 void DMA1_Stream5_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&hdma_usart2_rx);
+
+#ifndef RX_EVENT_CB
   serial_handlerDMA();
+#endif
+
 }
 
 /**
@@ -156,6 +160,9 @@ void DMA1_Stream5_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   HAL_UART_IRQHandler(&huart2);
+
+#ifndef RX_EVENT_CB
   serial_handlerUART();
+#endif
 }
 
