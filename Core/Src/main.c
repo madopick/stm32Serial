@@ -281,7 +281,8 @@ unsigned long tinysh_dec(char *s)
 
 /********************************************************
  * 	Parsing incoming message						   	*
- * 	Example: {MSG:1;23;21009}						*
+ * 	Example: {MSG:1;23;21009}							*
+ * 			 {RD1}
  ********************************************************/
 static void vShell_cmdParse(char *input)
 {
