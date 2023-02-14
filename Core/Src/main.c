@@ -87,9 +87,8 @@ int main(void)
 
   while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+	  HAL_Delay(1000);
+	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
   }
   /* USER CODE END 3 */
 }
@@ -349,7 +348,7 @@ static void vShell_cmdParse(char *input)
 
 void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size)
 {
-	printf("UART RX(%d): %s\r\n", u16_size, (char*)u8p_buffer);
+	//printf("UART RX(%d): %s\r\n", u16_size, (char*)u8p_buffer);
 	vShell_cmdParse((char*)u8p_buffer);
 }
 
