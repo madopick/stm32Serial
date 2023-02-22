@@ -43,6 +43,7 @@
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern UART_HandleTypeDef huart2;
+extern I2C_HandleTypeDef I2cHandle;
 
 
 /******************************************************************************/
@@ -165,4 +166,28 @@ void USART2_IRQHandler(void)
   serial_handlerUART();
 #endif
 }
+
+
+/**
+  * @brief  This function handles I2C event interrupt request.
+  * @param  None
+  * @retval None
+  * @Note   This function is redefined in "main.h" and related to I2C data transmission
+  */
+void I2Cx_EV_IRQHandler(void)
+{
+  HAL_I2C_EV_IRQHandler(& I2cHandle);
+}
+
+/**
+  * @brief  This function handles I2C error interrupt request.
+  * @param  None
+  * @retval None
+  * @Note   This function is redefined in "main.h" and related to I2C error
+  */
+void I2Cx_ER_IRQHandler(void)
+{
+  HAL_I2C_ER_IRQHandler(& I2cHandle);
+}
+
 

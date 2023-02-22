@@ -29,4 +29,10 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>copy_PARENT</name>
+			<value>$%7BPARENT-3-PROJECT_LOC%7D/STM32/STM32%20LIBS/en.stm32cubef4_v1-26-0_v1.26.0/STM32Cube_FW_F4_V1.26.0</value>
+		</variable>
+	</variableList>
 </projectDescription>
