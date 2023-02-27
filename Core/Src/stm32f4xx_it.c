@@ -191,3 +191,13 @@ void I2Cx_ER_IRQHandler(void)
 }
 
 
+/******************************************************************************
+  * @brief  This function handles external lines 15 to 10 interrupt request.
+  * @param  None
+  * @retval None
+  *****************************************************************************/
+void EXTI15_10_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(B1_Pin);
+}
+

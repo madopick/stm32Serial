@@ -54,6 +54,17 @@ static uint16_t Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferL
 
 
 
+#ifdef RX_EVENT_CB
+static uint8_t u8arr_eventBuff[UART_BUF_SZ];
+static uint8_t u8arr_uartEvent[UART_BUF_SZ];
+#endif
+
+static uint16_t u16_oldPos = 0;
+static uint16_t u16_lenCnt = 0;
+
+/* bit flag */
+uint8_t bitFlag;
+
 /* I2C handler declaration */
 I2C_HandleTypeDef I2cHandle;
 
@@ -117,110 +128,104 @@ int main(void)
   /* Infinite loop */
   printf("init OK\r\n");
 
-
-
-#ifdef MASTER_BOARD
-
-  /* Configure USER Button */
-  BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);
-
-  /* Wait for USER Button press before starting the Communication */
-  while (BSP_PB_GetState(BUTTON_KEY) == 1)
-  {
-	  /* Toggle LED2 every 1sec */
-	  BSP_LED_Toggle(LED2);
-	  HAL_Delay(1000);
-  }
-
-  /* Wait for USER Button release before starting the Communication */
-  while (BSP_PB_GetState(BUTTON_KEY) == 0)
-  {
-  }
-
-  BSP_LED_Off(LED2);
-
-  printf("Master I2C Sending \r\n\n");
-
-  do
-  {
-	  /*##-2- Start the transmission process #####################################*/
-	  /* While the I2C in reception process, user can transmit data through
-	  "aTxBuffer" buffer */
-	  if(HAL_I2C_Master_Transmit_IT(&I2cHandle, (uint16_t)I2C_ADDRESS, (uint8_t*)aTxBuffer, TXBUFFERSIZE)!= HAL_OK)
-	  {
-		/* Error_Handler() function is called in case of error. */
-		Error_Handler();
-	  }
-
-	  /*##-3- Wait for the end of the transfer ###################################*/
-	  /*  Before starting a new communication transfer, you need to check the current
-	  state of the peripheral; if it’s busy you need to wait for the end of current
-	  transfer before starting a new one.
-	  For simplicity reasons, this example is just waiting till the end of the
-	  transfer, but application may perform other tasks while transfer operation
-	  is ongoing. */
-	  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
-	  {
-	  }
-
-	  /* When Acknowledge failure occurs (Slave don't acknowledge its address)
-	  Master restarts communication */
-  }
-  while(HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
-
-
-
-
-#else
-
-  printf("Slave I2C Receiving \r\n\n");
-
-  if(HAL_I2C_Slave_Receive_IT(&I2cHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
-  {
-	  /* Transfer error in reception process */
-	  Error_Handler();
-  }
-
-  /*##-3- Wait for the end of the transfer ###################################*/
-  /*Before starting a new communication transfer, you need to check the current
-	state of the peripheral; if it’s busy you need to wait for the end of current
-	transfer before starting a new one.
-	For simplicity reasons, this example is just waiting till the end of the
-	transfer, but application may perform other tasks while transfer operation
-	is ongoing. */
-  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
-  {
-  }
-
-  printf("I2C RX: %s \r\n", (char*)aRxBuffer);
-
-#endif
-
-  /*##-5- Wait for the end of the transfer ###################################*/
-  /*Before starting a new communication transfer, you need to check the current
-	state of the peripheral; if it’s busy you need to wait for the end of current
-	transfer before starting a new one.
-	For simplicity reasons, this example is just waiting till the end of the
-	transfer, but application may perform other tasks while transfer operation
-	is ongoing. */
-  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
-  {
-  }
-
-  /*##-6- Compare the sent and received buffers ##############################*/
-  if(Buffercmp((uint8_t*)aTxBuffer,(uint8_t*)aRxBuffer, RXBUFFERSIZE))
-  {
-	 printf("Buffer compare Fail!!!\r\n\n");
-  }
-
-
-
   while (1)
   {
-	  //HAL_Delay(1000);
-	  //HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	  if (bitFlag & BFLAG_UART_RCV)
+	  {
+		  uartProcessing (u8arr_uartEvent, u16_lenCnt - 2); // remove \r & \n
+		  memset(u8arr_uartEvent, 0, UART_BUF_SZ);
+		  u16_lenCnt = 0;
+
+		  bitFlag 	&= ~BFLAG_UART_RCV;
+	  }
+	  else if (bitFlag & BFLAG_BTN)
+	  {
+		  printf("button pressed\r\n");
+		  HAL_Delay(1000);
+		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+		  bitFlag 	&= ~BFLAG_BTN;
+	  }
+	  else if (bitFlag & BFLAG_I2C_WR)
+	  {
+
+#ifdef MASTER_BOARD
+		  printf("Master I2C Sending \r\n\n");
+
+		  do
+		  {
+			  /*##-2- Start the transmission process #####################################*/
+			  if(HAL_I2C_Master_Transmit_IT(&I2cHandle, (uint16_t)I2C_ADDRESS, (uint8_t*)aTxBuffer, TXBUFFERSIZE)!= HAL_OK)
+			  {
+				  Error_Handler();
+			  }
+
+			  /*##-3- Wait for the end of the transfer ###################################*/
+			  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
+			  {
+			  }
+
+			  /* When Acknowledge failure occurs (Slave don't acknowledge its address)
+		  	  Master restarts communication */
+		  }
+		  while(HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
+
+		  bitFlag 	&= ~BFLAG_I2C_WR;
+#endif
+
+	  }
+	  else if (bitFlag & BFLAG_I2C_RD)
+	  {
+
+#ifdef MASTER_BOARD
+		  /*##-5- Wait for the end of the transfer ###################################*/
+		  /*Before starting a new communication transfer, you need to check the current
+			state of the peripheral; if it’s busy you need to wait for the end of current
+			transfer before starting a new one.
+			For simplicity reasons, this example is just waiting till the end of the
+			transfer, but application may perform other tasks while transfer operation
+			is ongoing. */
+		  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
+		  {
+		  }
+
+		  /*##-6- Compare the sent and received buffers ##############################*/
+		  if(Buffercmp((uint8_t*)aTxBuffer,(uint8_t*)aRxBuffer, RXBUFFERSIZE))
+		  {
+			  printf("Buffer compare Fail!!!\r\n\n");
+		  }
+
+		  bitFlag 	&= ~BFLAG_I2C_RD;
+#endif
+
+	  }
+	  else
+	  {
+
+#ifndef MASTER_BOARD
+		printf("Slave I2C Receiving \r\n\n");
+
+		if(HAL_I2C_Slave_Receive_IT(&I2cHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
+		{
+		  /* Transfer error in reception process */
+		  Error_Handler();
+		}
+
+		/*##-3- Wait for the end of the transfer ###################################*/
+		/*Before starting a new communication transfer, you need to check the current
+		state of the peripheral; if it’s busy you need to wait for the end of current
+		transfer before starting a new one.
+		For simplicity reasons, this example is just waiting till the end of the
+		transfer, but application may perform other tasks while transfer operation
+		is ongoing. */
+		while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
+		{
+		}
+
+		printf("I2C RX: %s \r\n", (char*)aRxBuffer);
+
+#endif
+	  }
   }
-  /* USER CODE END 3 */
 }
 
 
@@ -234,7 +239,7 @@ int main(void)
 #ifdef MASTER_BOARD
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
-  /* Turn LED2 on: Transfer in transmission process is correct */
+	/* Turn LED2 on: Transfer in transmission process is correct */
 	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
 
 }
@@ -271,13 +276,12 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 
 
 
-/**
+/*************************************************************************************
   * @brief  I2C error callbacks
   * @param  I2cHandle: I2C handle
-  * @note   This example shows a simple way to report transfer error, and you can
-  *         add your own implementation.
+  * @note
   * @retval None
-  */
+  ************************************************************************************/
  void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *I2cHandle)
 {
   printf("\r\nI2C ERROR \r\n\n");
@@ -288,13 +292,13 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
   }
 }
 
-/**
+/*************************************************************************************
   * @brief  Compares two buffers.
   * @param  pBuffer1, pBuffer2: buffers to be compared.
   * @param  BufferLength: buffer's length
   * @retval 0  : pBuffer1 identical to pBuffer2
   *         >0 : pBuffer1 differs from pBuffer2
-  */
+  ************************************************************************************/
 static uint16_t Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength)
 {
   while (BufferLength--)
@@ -312,13 +316,10 @@ static uint16_t Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferL
 
 
 
-
-
-
-/**
+/*************************************************************************************
   * @brief System Clock Configuration
   * @retval None
-  */
+  ************************************************************************************/
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -362,16 +363,12 @@ void SystemClock_Config(void)
 }
 
 
-#ifdef RX_EVENT_CB
-static uint8_t u8arr_eventBuff[UART_BUF_SZ];
-static uint8_t u8arr_uartEvent[UART_BUF_SZ];
-#endif
 
-/**
+/*************************************************************************************
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
-  */
+  ************************************************************************************/
 static void MX_USART2_UART_Init(void)
 {
   huart2.Instance 			= USART2;
@@ -396,9 +393,10 @@ static void MX_USART2_UART_Init(void)
 
 }
 
-/**
+
+/*************************************************************************************
   * Enable DMA controller clock
-  */
+  ************************************************************************************/
 static void MX_DMA_Init(void)
 {
 
@@ -411,11 +409,11 @@ static void MX_DMA_Init(void)
 
 }
 
-/**
+/*************************************************************************************
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
-  */
+  ************************************************************************************/
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -436,8 +434,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /* Enable and set EXTI lines 15 to 10 Interrupt */
-  //HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
-  //HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin 		= LD2_Pin;
@@ -599,8 +597,6 @@ void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size)
  ****************************************************************/
 static void vUAFE_uart_handle(uint16_t Size)
 {
-	static uint16_t u16_oldPos = 0;
-	static uint16_t u16_lenCnt = 0;
 	uint16_t u16_numData;
 
 	//printf("S(%d): %s\r\n", Size, (char*)u8arr_eventBuff);
@@ -637,9 +633,7 @@ static void vUAFE_uart_handle(uint16_t Size)
 		/* Check for ready to process */
 		if((u8arr_uartEvent[u16_lenCnt - 1] == '\n')&&(u8arr_uartEvent[u16_lenCnt - 2]== '\r'))
 		{
-			uartProcessing (u8arr_uartEvent, u16_lenCnt - 2); // remove \r & \n
-			memset(u8arr_uartEvent, 0, UART_BUF_SZ);
-			u16_lenCnt = 0;
+			bitFlag |= BFLAG_UART_RCV;
 		}
 
 	}
@@ -675,9 +669,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   ***********************************************************/
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == B1_Pin)
+  if ((GPIO_Pin == B1_Pin) && ((bitFlag & BFLAG_BTN) == 0))
   {
-
+	  bitFlag |= BFLAG_BTN;
   }
 
 }

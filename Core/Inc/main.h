@@ -47,8 +47,16 @@ void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size);
 
 #define RX_EVENT_CB
 
+/* BIT FLAG */
+#define BFLAG_UART_RCV								(1 << 0)
+#define BFLAG_I2C_RD								(1 << 1)
+#define BFLAG_I2C_WR								(1 << 2)
+#define BFLAG_BTN								 	(1 << 3)
+
+
+
 /* I2C */
-//#define MASTER_BOARD
+#define MASTER_BOARD
 #define I2C_ADDRESS        0x30F
 
 /* Private defines -----------------------------------------------------------*/
