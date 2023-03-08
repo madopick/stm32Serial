@@ -62,6 +62,27 @@ static uint8_t u8arr_uartEvent[UART_BUF_SZ];
 static uint16_t u16_oldPos = 0;
 static uint16_t u16_lenCnt = 0;
 
+
+/**********************************************************
+ * PARSING HEADER, Used in FW CONFIG - READ/WRITE Process
+ **********************************************************/
+#define CFG_LENGTH 				10
+#define CFG_HEADER_NUM 			6
+#define CFG_HEADER_CHARS_LEN 	5			//num of char for header
+#define CFG_HEADER_READ 		5			//Max index for write, above this index is read command.
+#define STRLENMAX				100
+
+static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
+{
+	"{MSG:",
+	"{CF1:",
+	"{CF2:",
+	"{CF3:",
+	"{CF4:",
+	"{RD1}"
+};
+
+
 /* bit flag */
 uint8_t bitFlag;
 
@@ -74,7 +95,7 @@ uint8_t aTxBuffer[] = " ****I2C_TwoBoards communication based on IT****  ****I2C
 /* Buffer used for reception */
 uint8_t aRxBuffer[RXBUFFERSIZE];
 
-
+int32_t i32_res[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
 
 /**
   * @brief  Retargets the C library printf function to the USART.
@@ -140,7 +161,13 @@ int main(void)
 	  }
 	  else if (bitFlag & BFLAG_BTN)
 	  {
-		  printf("button pressed\r\n");
+		  char sentMSG[128];
+		  snprintf(sentMSG, sizeof(sentMSG),"{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+				  i32_res[0], i32_res[1], i32_res[2], i32_res[3], i32_res[4], i32_res[5], i32_res[6]);
+		  printf("%s",sentMSG);
+
+		  //printf("CFG1: 100,200,23,-56,90,-4987,10\r\n");
+
 		  HAL_Delay(1000);
 		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 		  bitFlag 	&= ~BFLAG_BTN;
@@ -449,29 +476,6 @@ static void MX_GPIO_Init(void)
 
 
 
-/**********************************************************
- * PARSING HEADER, Used in FW CONFIG - READ/WRITE Process
- **********************************************************/
-#define CFG_LENGTH 				10
-#define CFG_HEADER_NUM 			6
-#define CFG_HEADER_CHARS_LEN 	5
-#define CFG_HEADER_READ 		5
-#define STRLENMAX				100
-
-static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
-{
-	"{MSG:",
-	"{CF1:",
-	"{CF2:",
-	"{CF3:",
-	"{CF4:",
-	"{RD1}"
-};
-
-
-int32_t i32_res[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
-
-
 /*********************************************************************
  * @name	: tinysh_dec
  * @brief	: string to decimal conversion (up to 15 chars).
@@ -513,7 +517,7 @@ unsigned long tinysh_dec(char *s)
 
 /********************************************************
  * 	Parsing incoming message						   	*
- * 	Example: {MSG:1;23;21009}							*
+ * 	Example: {MSG:1,23,21009,45,67,-18,25}				*
  * 			 {RD1}
  ********************************************************/
 static void vShell_cmdParse(char *input)
@@ -530,19 +534,19 @@ static void vShell_cmdParse(char *input)
 
 			char str_res[20];
 
-			puts("\r\n");
+			//puts("\r\n");
 
 			if (u8_idx < CFG_HEADER_READ)
 			{
 				/* WRITE HEADER */
 				while (*pChar)
 				{
-					if(*pChar == ';')
+					if(*pChar == ',')
 					{
 						memset(&str_res[0], 0, 10);
 						memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
 						i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
-						printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+						//printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
 
 						u8_stop = u8_start + 1;
 						u8_cnt++;
@@ -552,7 +556,7 @@ static void vShell_cmdParse(char *input)
 						memset(&str_res[0], 0, 10);
 						memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
 						i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
-						printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+						//printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
 
 						u8_cnt++;
 						break;
@@ -569,7 +573,8 @@ static void vShell_cmdParse(char *input)
 				/* READ HEADER */
 				char sendStr[STRLENMAX];
 				memset (sendStr, 0, STRLENMAX);
-				snprintf(sendStr, STRLENMAX, "READ:%ld;%ld;%ld",i32_res[0] , i32_res[1], i32_res[2]);
+				snprintf(sendStr, STRLENMAX, "{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+						i32_res[0] , i32_res[1], i32_res[2], i32_res[3] , i32_res[4], i32_res[5], i32_res[6]);
 				HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
 			}
 		}

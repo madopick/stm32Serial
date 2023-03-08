@@ -49,7 +49,6 @@ def serial_ports():
     return result
 
 
-
 class Worker(QObject):
     finished = pyqtSignal()
     intReady = pyqtSignal(str)
@@ -68,7 +67,7 @@ class Worker(QObject):
                 line = ''
 
             if line != '':
-                print(line)
+                #print(line)
                 time.sleep(0.1)
                 self.intReady.emit(line)
 
@@ -90,6 +89,8 @@ class qt(QMainWindow):
         self.CopyFlag = 0
         self.ConnectStatus = 0
         self.Port = "UART"
+        self.values = []
+        self.group = 'NONE'
 
         # global result
         print("Available ports:" + str(serial_ports()))
@@ -101,7 +102,24 @@ class qt(QMainWindow):
 
     def send_cfg1(self):
         print("send cfg1")
-        self.textEdit_3.append("Send CFG1+ \r\n")
+        cfg1text = "{CF1:" + \
+                   ('0' if (self.lineEdit_1.text()=='') else self.lineEdit_1.text()) + ',' + \
+                   ('0' if (self.lineEdit_2.text()=='') else self.lineEdit_2.text()) + ',' + \
+                   ('0' if (self.lineEdit_3.text()=='') else self.lineEdit_3.text()) + ',' + \
+                   ('0' if (self.lineEdit_4.text()=='') else self.lineEdit_4.text()) + ',' + \
+                   ('0' if (self.lineEdit_5.text()=='') else self.lineEdit_5.text()) + ',' + \
+                   ('0' if (self.lineEdit_6.text()=='') else self.lineEdit_6.text()) + ',' + \
+                   ('0' if (self.lineEdit_7.text()=='') else self.lineEdit_7.text()) + '}\r\n'
+
+        self.textEdit_3.append(str(cfg1text))
+
+        if self.pushBtnClicked:
+            self.pushBtnClicked = False
+            return
+
+        if self.ConnectStatus == 1:
+            ser.write(cfg1text.encode())
+            self.pushBtnClicked = True
 
 
     def loop_finished(self):
@@ -128,7 +146,7 @@ class qt(QMainWindow):
 
         #Verify the correct COM Port
         try:
-            mytext = "HELP\r\n"  # Send first enter
+            mytext = "{RD1}\r\n"  # Send first enter
 
             if(self.cb_Port.currentText() == "USB"):
                 print("USB HID Communication")
@@ -173,13 +191,37 @@ class qt(QMainWindow):
         else:
             print("USB Thread here")
 
+    def parseSerialMsg(self, str):
+        # print(str)
 
+        # remove leading and trailing edge spaces of each item of the list
+        #result = [value.strip() for value in str.split(':')[1].split(',')]
+        result = [value.strip() for value in str.split(':')[1].replace('}','').split(',')]
+
+        for idx in result:
+            print(idx)
+
+        return result
 
     def onIntReady(self, i):
-        print('SerialAlwaysRead')
+        print('SerialRead')
 
         if i != '':
             self.textEdit_3.append("{}".format(i))
+
+            self.group = i.split(':')
+
+            if len(self.group) == 2 :
+                self.values = self.parseSerialMsg(i)
+
+                if self.group[0] == '{CF1':
+                    self.lineEdit_1.setText(self.values[0])
+                    self.lineEdit_2.setText(self.values[1])
+                    self.lineEdit_3.setText(self.values[2])
+                    self.lineEdit_4.setText(self.values[3])
+                    self.lineEdit_5.setText(self.values[4])
+                    self.lineEdit_6.setText(self.values[5])
+                    self.lineEdit_7.setText(self.values[6])
 
 
     # TXT Save

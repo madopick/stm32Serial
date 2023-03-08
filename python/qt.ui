@@ -30,12 +30,12 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>310</y>
+      <y>380</y>
       <width>781</width>
-      <height>381</height>
+      <height>311</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0">
+    <layout class="QGridLayout" name="gridLayout" rowstretch="0">
      <property name="sizeConstraint">
       <enum>QLayout::SetNoConstraint</enum>
      </property>
@@ -124,7 +124,7 @@
     <property name="geometry">
      <rect>
       <x>820</x>
-      <y>360</y>
+      <y>430</y>
       <width>111</width>
       <height>41</height>
      </rect>
@@ -136,8 +136,8 @@
    <widget class="QLabel" name="label_9">
     <property name="geometry">
      <rect>
-      <x>450</x>
-      <y>110</y>
+      <x>600</x>
+      <y>20</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -149,8 +149,8 @@
    <widget class="QTextEdit" name="textEdit_2">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>110</y>
+      <x>680</x>
+      <y>20</y>
       <width>251</width>
       <height>31</height>
      </rect>
@@ -159,8 +159,8 @@
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>700</x>
-      <y>150</y>
+      <x>770</x>
+      <y>60</y>
       <width>81</width>
       <height>31</height>
      </rect>
@@ -192,7 +192,7 @@
     <property name="geometry">
      <rect>
       <x>820</x>
-      <y>310</y>
+      <y>380</y>
       <width>111</width>
       <height>41</height>
      </rect>
@@ -207,7 +207,7 @@
       <x>10</x>
       <y>120</y>
       <width>231</width>
-      <height>141</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="verticalScrollBarPolicy">
@@ -223,7 +223,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>0</y>
+       <y>-219</y>
        <width>200</width>
        <height>500</height>
       </rect>
@@ -264,7 +264,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Param</string>
+          <string>Param2</string>
          </property>
         </widget>
        </item>
@@ -313,7 +313,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Param</string>
+          <string>Param3</string>
          </property>
         </widget>
        </item>
@@ -347,7 +347,7 @@
         <height>27</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
         <widget class="QLabel" name="label_18">
          <property name="sizePolicy">
@@ -362,7 +362,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Param</string>
+          <string>Param4</string>
          </property>
         </widget>
        </item>
@@ -383,7 +383,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_8"/>
+        <widget class="QLineEdit" name="lineEdit_4"/>
        </item>
       </layout>
      </widget>
@@ -392,7 +392,7 @@
        <rect>
         <x>10</x>
         <y>130</y>
-        <width>327</width>
+        <width>211</width>
         <height>27</height>
        </rect>
       </property>
@@ -411,7 +411,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Param</string>
+          <string>Param5</string>
          </property>
         </widget>
        </item>
@@ -432,7 +432,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_9"/>
+        <widget class="QLineEdit" name="lineEdit_5"/>
        </item>
       </layout>
      </widget>
@@ -441,11 +441,11 @@
        <rect>
         <x>10</x>
         <y>160</y>
-        <width>327</width>
+        <width>201</width>
         <height>27</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_12">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
         <widget class="QLabel" name="label_20">
          <property name="sizePolicy">
@@ -460,7 +460,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Param</string>
+          <string>Param6</string>
          </property>
         </widget>
        </item>
@@ -481,7 +481,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_10"/>
+        <widget class="QLineEdit" name="lineEdit_6"/>
        </item>
       </layout>
      </widget>
@@ -494,7 +494,7 @@
         <height>25</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="horizontalLayout_1">
        <item>
         <widget class="QLabel" name="label_2">
          <property name="sizePolicy">
@@ -509,7 +509,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Param</string>
+          <string>Param1</string>
          </property>
         </widget>
        </item>
@@ -530,7 +530,56 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit"/>
+        <widget class="QLineEdit" name="lineEdit_1"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>190</y>
+        <width>201</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QLabel" name="label_22">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Param7</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_11">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>10</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit_7"/>
        </item>
       </layout>
      </widget>
@@ -558,7 +607,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>280</y>
+      <y>350</y>
       <width>231</width>
       <height>21</height>
      </rect>
@@ -570,8 +619,8 @@
    <widget class="QPushButton" name="pb_Rd">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>150</y>
+      <x>680</x>
+      <y>60</y>
       <width>81</width>
       <height>31</height>
      </rect>
