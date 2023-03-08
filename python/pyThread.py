@@ -113,10 +113,6 @@ class qt(QMainWindow):
 
         self.textEdit_3.append(str(cfg1text))
 
-        if self.pushBtnClicked:
-            self.pushBtnClicked = False
-            return
-
         if self.ConnectStatus == 1:
             ser.write(cfg1text.encode())
             self.pushBtnClicked = True
