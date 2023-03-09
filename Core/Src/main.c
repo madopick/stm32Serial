@@ -95,7 +95,11 @@ uint8_t aTxBuffer[] = " ****I2C_TwoBoards communication based on IT****  ****I2C
 /* Buffer used for reception */
 uint8_t aRxBuffer[RXBUFFERSIZE];
 
-int32_t i32_res[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
+int32_t i32_resCF1[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
+int32_t i32_resCF2[CFG_LENGTH] = {20,156,52,-37,20,145,367,46,-12,19};
+
+
+char sendStr[STRLENMAX];
 
 /**
   * @brief  Retargets the C library printf function to the USART.
@@ -107,6 +111,9 @@ PUTCHAR_PROTOTYPE
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
   return ch;
 }
+
+
+
 
 
 /**
@@ -159,11 +166,44 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_UART_RCV;
 	  }
+	  else if (bitFlag & BFLAG_RD1)
+	  {
+		  memset (sendStr, 0, STRLENMAX);
+		  snprintf(sendStr, STRLENMAX, "{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+				  i32_resCF1[0] , i32_resCF1[1], i32_resCF1[2], i32_resCF1[3] ,
+				  i32_resCF1[4], i32_resCF1[5], i32_resCF1[6]);
+		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
+
+		  bitFlag 	&= ~BFLAG_RD1;
+	  }
+	  else if (bitFlag & BFLAG_RD2)
+	  {
+		  memset (sendStr, 0, STRLENMAX);
+		  snprintf(sendStr, STRLENMAX, "{CF2:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+				  i32_resCF2[0] , i32_resCF2[1], i32_resCF2[2], i32_resCF2[3],
+				  i32_resCF2[4], i32_resCF2[5], i32_resCF2[6]);
+		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
+
+		  bitFlag 	&= ~BFLAG_RD2;
+	  }
+	  else if (bitFlag & BFLAG_WR1)
+	  {
+
+
+		  bitFlag 	&= ~BFLAG_WR1;
+	  }
+	  else if (bitFlag & BFLAG_WR2)
+	  {
+
+
+		  bitFlag 	&= ~BFLAG_WR2;
+	  }
 	  else if (bitFlag & BFLAG_BTN)
 	  {
 		  char sentMSG[128];
 		  snprintf(sentMSG, sizeof(sentMSG),"{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
-				  i32_res[0], i32_res[1], i32_res[2], i32_res[3], i32_res[4], i32_res[5], i32_res[6]);
+				  i32_resCF1[0], i32_resCF1[1], i32_resCF1[2], i32_resCF1[3],
+				  i32_resCF1[4], i32_resCF1[5], i32_resCF1[6]);
 		  printf("%s",sentMSG);
 
 		  //printf("CFG1: 100,200,23,-56,90,-4987,10\r\n");
@@ -514,6 +554,48 @@ unsigned long tinysh_dec(char *s)
 }
 
 
+/*********************************************************************
+ * @name	: updateBufferValue
+ * @brief	: Parsing receiving command from PC via UART
+ *********************************************************************/
+void vUpdateBufferValue(char *input, char *pChar, char *pChar2, int32_t *pInt32)
+{
+	uint8_t u8_start 	= 0;
+	uint8_t u8_stop 	= 0;
+	uint8_t u8_cnt 		= 0;
+
+	char str_res[150];
+
+	while (*pChar)
+	{
+		if(*pChar == ',')
+		{
+			memset(&str_res[0], 0, sizeof(str_res));
+			memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
+			pInt32[u8_cnt] = tinysh_dec(&str_res[0]);
+			//printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+
+			u8_stop = u8_start + 1;
+			u8_cnt++;
+		}
+		else if (*pChar == '}')
+		{
+			memset(&str_res[0], 0, sizeof(str_res));
+			memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
+			pInt32[u8_cnt] = tinysh_dec(&str_res[0]);
+			//printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
+
+			u8_cnt++;
+			break;
+		}
+
+		pChar++;
+		u8_start++;
+	}
+}
+
+
+
 
 /********************************************************
  * 	Parsing incoming message						   	*
@@ -526,56 +608,47 @@ static void vShell_cmdParse(char *input)
 	{
 		if(!memcmp(input,(char*)&str_cfg_header[u8_idx][0], CFG_HEADER_CHARS_LEN))
 		{
-			char *pChar 		= &input[CFG_HEADER_CHARS_LEN];
-			char *pChar2 		= &input[CFG_HEADER_CHARS_LEN];
-			uint8_t u8_start 	= 0;
-			uint8_t u8_stop 	= 0;
-			uint8_t u8_cnt 		= 0;
+			char *pChar 		= &input[CFG_HEADER_CHARS_LEN];		//for checking each char byte ASCII.
+			char *pChar2 		= &input[CFG_HEADER_CHARS_LEN];		//for copying start.
 
-			char str_res[20];
-
-			//puts("\r\n");
 
 			if (u8_idx < CFG_HEADER_READ)
 			{
 				/* WRITE HEADER */
-				while (*pChar)
+				switch(u8_idx)
 				{
-					if(*pChar == ',')
-					{
-						memset(&str_res[0], 0, 10);
-						memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
-						i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
-						//printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
-
-						u8_stop = u8_start + 1;
-						u8_cnt++;
-					}
-					else if (*pChar == '}')
-					{
-						memset(&str_res[0], 0, 10);
-						memcpy(&str_res[0], &pChar2[u8_stop], u8_start - u8_stop);
-						i32_res[u8_cnt] = tinysh_dec(&str_res[0]);
-						//printf("val: %s - %ld\r\n", &str_res[0], i32_res[u8_cnt]);
-
-						u8_cnt++;
+					case CF1_HEADER:
+						vUpdateBufferValue(input, pChar, pChar2, i32_resCF1);
+						bitFlag |= BFLAG_WR1;
 						break;
-					}
 
-					pChar++;
-					u8_start++;
+					case CF2_HEADER:
+						vUpdateBufferValue(input, pChar, pChar2, i32_resCF2);
+						bitFlag |= BFLAG_WR2;
+						break;
+
+					default:
+						break;
 				}
-				break;
 
+				break;
 			}
 			else
 			{
 				/* READ HEADER */
-				char sendStr[STRLENMAX];
-				memset (sendStr, 0, STRLENMAX);
-				snprintf(sendStr, STRLENMAX, "{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
-						i32_res[0] , i32_res[1], i32_res[2], i32_res[3] , i32_res[4], i32_res[5], i32_res[6]);
-				HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
+				switch(u8_idx)
+				{
+					case RD1_HEADER:
+						bitFlag |= BFLAG_RD1;
+						break;
+
+					case RD2_HEADER:
+						bitFlag |= BFLAG_RD2;
+						break;
+
+					default:
+						break;
+				}
 			}
 		}
 	}

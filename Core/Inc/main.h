@@ -52,6 +52,24 @@ void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size);
 #define BFLAG_I2C_RD								(1 << 1)
 #define BFLAG_I2C_WR								(1 << 2)
 #define BFLAG_BTN								 	(1 << 3)
+#define BFLAG_RD1								 	(1 << 4)
+#define BFLAG_RD2								 	(1 << 5)
+#define BFLAG_WR1								 	(1 << 6)
+#define BFLAG_WR2								 	(1 << 7)
+
+
+
+///Header Request
+typedef enum
+{
+	MSG_HEADER = 0,
+	CF1_HEADER,
+	CF2_HEADER,
+	CF3_HEADER,
+	CF4_HEADER,
+	RD1_HEADER,
+	RD2_HEADER
+} eREQ_HEADER_t;
 
 
 
