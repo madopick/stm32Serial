@@ -67,7 +67,7 @@ static uint16_t u16_lenCnt = 0;
  * PARSING HEADER, Used in FW CONFIG - READ/WRITE Process
  **********************************************************/
 #define CFG_LENGTH 				10
-#define CFG_HEADER_NUM 			6
+#define CFG_HEADER_NUM 			7
 #define CFG_HEADER_CHARS_LEN 	5			//num of char for header
 #define CFG_HEADER_READ 		5			//Max index for write, above this index is read command.
 #define STRLENMAX				100
@@ -79,7 +79,8 @@ static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 	"{CF2:",
 	"{CF3:",
 	"{CF4:",
-	"{RD1}"
+	"{RD1}",
+	"{RD2}"
 };
 
 

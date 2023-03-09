@@ -84,13 +84,17 @@ class qt(QMainWindow):
         self.thread = None
         self.worker = None
         self.pushButton.clicked.connect(self.start_loop)
-        self.pb_cfg1.clicked.connect(self.send_cfg1)
+        self.pb_cfg1_wr.clicked.connect(self.send_cfg1)
+        self.pb_cfg2_wr.clicked.connect(self.send_cfg2)
+        self.pb_cfg1_rd.clicked.connect(self.read_cfg1)
+        self.pb_cfg2_rd.clicked.connect(self.read_cfg2)
         self.pushBtnClicked = False
         self.CopyFlag = 0
         self.ConnectStatus = 0
         self.Port = "UART"
         self.values = []
         self.group = 'NONE'
+        self.getAll = 0
 
         # global result
         print("Available ports:" + str(serial_ports()))
@@ -100,8 +104,12 @@ class qt(QMainWindow):
         self.cb_Port.addItem("USB")
         print('QT init')
 
+    # WRITE CF1 array values
     def send_cfg1(self):
         print("send cfg1")
+        if self.ConnectStatus == 0:
+            return
+
         cfg1text = "{CF1:" + \
                    ('0' if (self.lineEdit_1.text()=='') else self.lineEdit_1.text()) + ',' + \
                    ('0' if (self.lineEdit_2.text()=='') else self.lineEdit_2.text()) + ',' + \
@@ -112,11 +120,49 @@ class qt(QMainWindow):
                    ('0' if (self.lineEdit_7.text()=='') else self.lineEdit_7.text()) + '}\r\n'
 
         self.textEdit_3.append(str(cfg1text))
+        ser.write(cfg1text.encode())
+        self.pushBtnClicked = True
 
-        if self.ConnectStatus == 1:
-            ser.write(cfg1text.encode())
-            self.pushBtnClicked = True
+    # WRITE CF2 array values
+    def send_cfg2(self):
+        print("send cfg2")
+        if self.ConnectStatus == 0:
+            return
 
+        cfg2text = "{CF2:" + \
+                   ('0' if (self.lineEdit_CF2_1.text()=='') else self.lineEdit_CF2_1.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_2.text()=='') else self.lineEdit_CF2_2.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_3.text()=='') else self.lineEdit_CF2_3.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_4.text()=='') else self.lineEdit_CF2_4.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_5.text()=='') else self.lineEdit_CF2_5.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_6.text()=='') else self.lineEdit_CF2_6.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_7.text()=='') else self.lineEdit_CF2_7.text()) + '}\r\n'
+
+        self.textEdit_3.append(str(cfg2text))
+        ser.write(cfg2text.encode())
+        self.pushBtnClicked = True
+
+    #READ CF1 array values
+    def read_cfg1(self):
+        print("read cfg1")
+        if self.ConnectStatus == 0:
+            return
+
+        cfg1text = "{RD1}\r\n"
+        self.textEdit_3.append(str(cfg1text))
+        ser.write(cfg1text.encode())
+        self.pushBtnClicked = True
+
+    # READ CF2 array values
+    def read_cfg2(self):
+        print("read cfg2")
+        if self.ConnectStatus == 0:
+            return
+
+        cfg2text = "{RD2}\r\n"
+        self.textEdit_3.append(str(cfg2text))
+        ser.write(cfg2text.encode())
+        self.pushBtnClicked = True
 
     def loop_finished(self):
         print('Loop Finished')
@@ -137,12 +183,16 @@ class qt(QMainWindow):
         #Disconnect
         if(self.ConnectStatus == 1):
             self.ConnectStatus = 0
+            self.pushButton.setText("CONNECT")
+            self.label_5.setText("Not Connected")
+            self.label_5.setStyleSheet('color: red')
             self.stop_loop()
             return
 
         #Verify the correct COM Port
         try:
             mytext = "{RD1}\r\n"  # Send first enter
+            self.getAll = 1
 
             if(self.cb_Port.currentText() == "USB"):
                 print("USB HID Communication")
@@ -204,7 +254,6 @@ class qt(QMainWindow):
 
         if i != '':
             self.textEdit_3.append("{}".format(i))
-
             self.group = i.split(':')
 
             if len(self.group) == 2 :
@@ -218,6 +267,22 @@ class qt(QMainWindow):
                     self.lineEdit_5.setText(self.values[4])
                     self.lineEdit_6.setText(self.values[5])
                     self.lineEdit_7.setText(self.values[6])
+
+                    if self.getAll == 1:
+                        self.getAll = 0
+                        cfg2text = "{RD2}\r\n"
+                        self.textEdit_3.append(str(cfg2text))
+                        ser.write(cfg2text.encode())
+                        self.pushBtnClicked = True
+
+                if self.group[0] == '{CF2':
+                    self.lineEdit_CF2_1.setText(self.values[0])
+                    self.lineEdit_CF2_2.setText(self.values[1])
+                    self.lineEdit_CF2_3.setText(self.values[2])
+                    self.lineEdit_CF2_4.setText(self.values[3])
+                    self.lineEdit_CF2_5.setText(self.values[4])
+                    self.lineEdit_CF2_6.setText(self.values[5])
+                    self.lineEdit_CF2_7.setText(self.values[6])
 
 
     # TXT Save
