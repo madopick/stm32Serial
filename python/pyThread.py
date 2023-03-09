@@ -10,6 +10,7 @@
 
 import sys, os, serial, serial.tools.list_ports, warnings
 from PyQt5.QtCore import *
+from PyQt5.QtGui import QColor
 import time
 from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
@@ -62,12 +63,10 @@ class Worker(QObject):
         while self.working:
             if ser.isOpen():
                 line = ser.readline().decode('utf-8')
-                #line = ser.readline().decode('ascii')
             else:
                 line = ''
 
             if line != '':
-                #print(line)
                 time.sleep(0.1)
                 self.intReady.emit(line)
 
@@ -119,7 +118,12 @@ class qt(QMainWindow):
                    ('0' if (self.lineEdit_6.text()=='') else self.lineEdit_6.text()) + ',' + \
                    ('0' if (self.lineEdit_7.text()=='') else self.lineEdit_7.text()) + '}\r\n'
 
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
         self.textEdit_3.append(str(cfg1text))
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
         ser.write(cfg1text.encode())
         self.pushBtnClicked = True
 
@@ -138,7 +142,12 @@ class qt(QMainWindow):
                    ('0' if (self.lineEdit_CF2_6.text()=='') else self.lineEdit_CF2_6.text()) + ',' + \
                    ('0' if (self.lineEdit_CF2_7.text()=='') else self.lineEdit_CF2_7.text()) + '}\r\n'
 
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
         self.textEdit_3.append(str(cfg2text))
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
         ser.write(cfg2text.encode())
         self.pushBtnClicked = True
 
@@ -148,8 +157,13 @@ class qt(QMainWindow):
         if self.ConnectStatus == 0:
             return
 
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
         cfg1text = "{RD1}\r\n"
         self.textEdit_3.append(str(cfg1text))
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
         ser.write(cfg1text.encode())
         self.pushBtnClicked = True
 
@@ -159,13 +173,43 @@ class qt(QMainWindow):
         if self.ConnectStatus == 0:
             return
 
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
         cfg2text = "{RD2}\r\n"
         self.textEdit_3.append(str(cfg2text))
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
         ser.write(cfg2text.encode())
         self.pushBtnClicked = True
 
     def loop_finished(self):
         print('Loop Finished')
+
+    def clear_disconnect(self):
+        self.lineEdit_1.clear()
+        self.lineEdit_2.clear()
+        self.lineEdit_3.clear()
+        self.lineEdit_4.clear()
+        self.lineEdit_5.clear()
+        self.lineEdit_6.clear()
+        self.lineEdit_7.clear()
+
+        self.lineEdit_CF2_1.clear()
+        self.lineEdit_CF2_2.clear()
+        self.lineEdit_CF2_3.clear()
+        self.lineEdit_CF2_4.clear()
+        self.lineEdit_CF2_5.clear()
+        self.lineEdit_CF2_6.clear()
+        self.lineEdit_CF2_7.clear()
+
+        redColor = QColor(255, 0, 0)
+        self.textEdit_3.setTextColor(redColor)
+        endText = "\r\n==================================== DISCONNECTED ====================================\r\n"
+        self.textEdit_3.append(endText)
+
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
 
 
     def stop_loop(self):
@@ -183,6 +227,7 @@ class qt(QMainWindow):
         #Disconnect
         if(self.ConnectStatus == 1):
             self.ConnectStatus = 0
+            self.clear_disconnect()
             self.pushButton.setText("CONNECT")
             self.label_5.setText("Not Connected")
             self.label_5.setStyleSheet('color: red')
@@ -199,6 +244,13 @@ class qt(QMainWindow):
                 self.Port = "USB"
             else:
                 self.Port = "UART"
+
+                blueColor = QColor(0, 0, 255)
+                self.textEdit_3.setTextColor(blueColor)
+                self.textEdit_3.append(mytext)
+                blackColor = QColor(0, 0, 0)
+                self.textEdit_3.setTextColor(blackColor)
+
                 ser = serial.Serial(self.cb_Port.currentText(), 115200, timeout=1)
                 ser.write(mytext.encode())
 
@@ -237,6 +289,7 @@ class qt(QMainWindow):
         else:
             print("USB Thread here")
 
+    #Parse incoming uart msg from STM32
     def parseSerialMsg(self, str):
         # print(str)
 
@@ -249,6 +302,7 @@ class qt(QMainWindow):
 
         return result
 
+    #Serial Receiving Packets
     def onIntReady(self, i):
         print('SerialRead')
 
@@ -270,8 +324,14 @@ class qt(QMainWindow):
 
                     if self.getAll == 1:
                         self.getAll = 0
+
+                        blueColor = QColor(0, 0, 255)
+                        self.textEdit_3.setTextColor(blueColor)
                         cfg2text = "{RD2}\r\n"
                         self.textEdit_3.append(str(cfg2text))
+                        blackColor = QColor(0, 0, 0)
+                        self.textEdit_3.setTextColor(blackColor)
+
                         ser.write(cfg2text.encode())
                         self.pushBtnClicked = True
 
@@ -312,38 +372,13 @@ class qt(QMainWindow):
 
         self.textEdit_3.setText('')
 
+    #Clear UART console history
     def on_pb_Clr_clicked(self):
         if self.pushBtnClicked:
             self.pushBtnClicked = False
             return
 
         self.textEdit_3.setText('')
-
-    def on_pushButton_clicked(self):
-        if self.pushBtnClicked:
-            self.pushBtnClicked = False
-            return
-
-        # Port Detection START
-        ports = [
-            p.device
-            for p in serial.tools.list_ports.comports()
-            if 'USB' in p.description
-        ]
-
-        if not ports:
-            ports = ['NONE']
-        # Port Detection END
-
-        if ports[0] != 'NONE':
-            self.textEdit.setText('Data Gathering...')
-            self.label_5.setText("CONNECTED!")
-            self.label_5.setStyleSheet('color: green')
-            x = 1
-            self.textEdit_3.setText(":")
-
-        self.pushBtnClicked = True
-
 
     #SEND CMD BUTTON
     def on_pushButton_3_clicked(self):
@@ -355,7 +390,13 @@ class qt(QMainWindow):
             return
 
         mytext = self.textEdit_2.toPlainText() + "\r\n"
-        print(mytext)
+
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
+        self.textEdit_3.append(mytext)
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
         ser.write(mytext.encode())
         self.pushBtnClicked = True
 
