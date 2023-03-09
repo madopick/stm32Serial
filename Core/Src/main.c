@@ -67,10 +67,10 @@ static uint16_t u16_lenCnt = 0;
  * PARSING HEADER, Used in FW CONFIG - READ/WRITE Process
  **********************************************************/
 #define CFG_LENGTH 				10
-#define CFG_HEADER_NUM 			7
+#define CFG_HEADER_NUM 			8
 #define CFG_HEADER_CHARS_LEN 	5			//num of char for header
 #define CFG_HEADER_READ 		5			//Max index for write, above this index is read command.
-#define STRLENMAX				100
+#define STRLENMAX				256
 
 static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 {
@@ -80,12 +80,13 @@ static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 	"{CF3:",
 	"{CF4:",
 	"{RD1}",
-	"{RD2}"
+	"{RD2}",
+	"{RD3}"
 };
 
 
 /* bit flag */
-uint8_t bitFlag;
+uint16_t bitFlag;
 
 /* I2C handler declaration */
 I2C_HandleTypeDef I2cHandle;
@@ -98,6 +99,7 @@ uint8_t aRxBuffer[RXBUFFERSIZE];
 
 int32_t i32_resCF1[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
 int32_t i32_resCF2[CFG_LENGTH] = {20,156,52,-37,20,145,367,46,-12,19};
+int32_t i32_resCF3[CFG_LENGTH] = {35,16,2022,-457,560,15,97,46,12,-67};
 
 
 char sendStr[STRLENMAX];
@@ -170,9 +172,9 @@ int main(void)
 	  else if (bitFlag & BFLAG_RD1)
 	  {
 		  memset (sendStr, 0, STRLENMAX);
-		  snprintf(sendStr, STRLENMAX, "{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
-				  i32_resCF1[0] , i32_resCF1[1], i32_resCF1[2], i32_resCF1[3] ,
-				  i32_resCF1[4], i32_resCF1[5], i32_resCF1[6]);
+		  snprintf(sendStr, STRLENMAX, "{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+				  i32_resCF1[0] , i32_resCF1[1], i32_resCF1[2], i32_resCF1[3], i32_resCF1[4],
+				  i32_resCF1[5], i32_resCF1[6], i32_resCF1[7], i32_resCF1[8], i32_resCF1[9]);
 		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
 
 		  bitFlag 	&= ~BFLAG_RD1;
@@ -180,12 +182,22 @@ int main(void)
 	  else if (bitFlag & BFLAG_RD2)
 	  {
 		  memset (sendStr, 0, STRLENMAX);
-		  snprintf(sendStr, STRLENMAX, "{CF2:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
-				  i32_resCF2[0] , i32_resCF2[1], i32_resCF2[2], i32_resCF2[3],
-				  i32_resCF2[4], i32_resCF2[5], i32_resCF2[6]);
+		  snprintf(sendStr, STRLENMAX, "{CF2:%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+				  i32_resCF2[0] , i32_resCF2[1], i32_resCF2[2], i32_resCF2[3], i32_resCF2[4],
+				  i32_resCF2[5], i32_resCF2[6], i32_resCF2[7], i32_resCF2[8], i32_resCF2[9]);
 		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
 
 		  bitFlag 	&= ~BFLAG_RD2;
+	  }
+	  else if (bitFlag & BFLAG_RD3)
+	  {
+		  memset (sendStr, 0, STRLENMAX);
+		  snprintf(sendStr, STRLENMAX, "{CF3:%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+				  i32_resCF3[0] , i32_resCF3[1], i32_resCF3[2], i32_resCF3[3], i32_resCF3[4],
+				  i32_resCF3[5], i32_resCF3[6], i32_resCF3[7], i32_resCF3[8], i32_resCF3[9]);
+		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
+
+		  bitFlag 	&= ~BFLAG_RD3;
 	  }
 	  else if (bitFlag & BFLAG_WR1)
 	  {
@@ -198,6 +210,12 @@ int main(void)
 
 
 		  bitFlag 	&= ~BFLAG_WR2;
+	  }
+	  else if (bitFlag & BFLAG_WR3)
+	  {
+
+
+		  bitFlag 	&= ~BFLAG_WR3;
 	  }
 	  else if (bitFlag & BFLAG_BTN)
 	  {
@@ -628,6 +646,11 @@ static void vShell_cmdParse(char *input)
 						bitFlag |= BFLAG_WR2;
 						break;
 
+					case CF3_HEADER:
+						vUpdateBufferValue(input, pChar, pChar2, i32_resCF3);
+						bitFlag |= BFLAG_WR3;
+						break;
+
 					default:
 						break;
 				}
@@ -645,6 +668,10 @@ static void vShell_cmdParse(char *input)
 
 					case RD2_HEADER:
 						bitFlag |= BFLAG_RD2;
+						break;
+
+					case RD3_HEADER:
+						bitFlag |= BFLAG_RD3;
 						break;
 
 					default:

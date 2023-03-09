@@ -14,6 +14,7 @@ from PyQt5.QtGui import QColor
 import time
 from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
+from PyQt5.QtGui import QIntValidator
 import serial.tools.list_ports as port_list
 
 
@@ -85,8 +86,10 @@ class qt(QMainWindow):
         self.pushButton.clicked.connect(self.start_loop)
         self.pb_cfg1_wr.clicked.connect(self.send_cfg1)
         self.pb_cfg2_wr.clicked.connect(self.send_cfg2)
+        self.pb_cfg3_wr.clicked.connect(self.send_cfg3)
         self.pb_cfg1_rd.clicked.connect(self.read_cfg1)
         self.pb_cfg2_rd.clicked.connect(self.read_cfg2)
+        self.pb_cfg3_rd.clicked.connect(self.read_cfg3)
         self.pushBtnClicked = False
         self.CopyFlag = 0
         self.ConnectStatus = 0
@@ -94,6 +97,41 @@ class qt(QMainWindow):
         self.values = []
         self.group = 'NONE'
         self.getAll = 0
+
+        onlyInt = QIntValidator()
+        onlyInt.setRange(-2147483640, 2147483640)
+        self.lineEdit_CF1_1.setValidator(onlyInt)
+        self.lineEdit_CF1_2.setValidator(onlyInt)
+        self.lineEdit_CF1_3.setValidator(onlyInt)
+        self.lineEdit_CF1_4.setValidator(onlyInt)
+        self.lineEdit_CF1_5.setValidator(onlyInt)
+        self.lineEdit_CF1_6.setValidator(onlyInt)
+        self.lineEdit_CF1_7.setValidator(onlyInt)
+        self.lineEdit_CF1_8.setValidator(onlyInt)
+        self.lineEdit_CF1_9.setValidator(onlyInt)
+        self.lineEdit_CF1_10.setValidator(onlyInt)
+
+        self.lineEdit_CF2_1.setValidator(onlyInt)
+        self.lineEdit_CF2_2.setValidator(onlyInt)
+        self.lineEdit_CF2_3.setValidator(onlyInt)
+        self.lineEdit_CF2_4.setValidator(onlyInt)
+        self.lineEdit_CF2_5.setValidator(onlyInt)
+        self.lineEdit_CF2_6.setValidator(onlyInt)
+        self.lineEdit_CF2_7.setValidator(onlyInt)
+        self.lineEdit_CF2_8.setValidator(onlyInt)
+        self.lineEdit_CF2_9.setValidator(onlyInt)
+        self.lineEdit_CF2_10.setValidator(onlyInt)
+
+        self.lineEdit_CF3_1.setValidator(onlyInt)
+        self.lineEdit_CF3_2.setValidator(onlyInt)
+        self.lineEdit_CF3_3.setValidator(onlyInt)
+        self.lineEdit_CF3_4.setValidator(onlyInt)
+        self.lineEdit_CF3_5.setValidator(onlyInt)
+        self.lineEdit_CF3_6.setValidator(onlyInt)
+        self.lineEdit_CF3_7.setValidator(onlyInt)
+        self.lineEdit_CF3_8.setValidator(onlyInt)
+        self.lineEdit_CF3_9.setValidator(onlyInt)
+        self.lineEdit_CF3_10.setValidator(onlyInt)
 
         # global result
         print("Available ports:" + str(serial_ports()))
@@ -110,13 +148,16 @@ class qt(QMainWindow):
             return
 
         cfg1text = "{CF1:" + \
-                   ('0' if (self.lineEdit_1.text()=='') else self.lineEdit_1.text()) + ',' + \
-                   ('0' if (self.lineEdit_2.text()=='') else self.lineEdit_2.text()) + ',' + \
-                   ('0' if (self.lineEdit_3.text()=='') else self.lineEdit_3.text()) + ',' + \
-                   ('0' if (self.lineEdit_4.text()=='') else self.lineEdit_4.text()) + ',' + \
-                   ('0' if (self.lineEdit_5.text()=='') else self.lineEdit_5.text()) + ',' + \
-                   ('0' if (self.lineEdit_6.text()=='') else self.lineEdit_6.text()) + ',' + \
-                   ('0' if (self.lineEdit_7.text()=='') else self.lineEdit_7.text()) + '}\r\n'
+                   ('0' if (self.lineEdit_CF1_1.text()=='') else self.lineEdit_CF1_1.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_2.text()=='') else self.lineEdit_CF1_2.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_3.text()=='') else self.lineEdit_CF1_3.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_4.text()=='') else self.lineEdit_CF1_4.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_5.text()=='') else self.lineEdit_CF1_5.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_6.text()=='') else self.lineEdit_CF1_6.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_7.text()=='') else self.lineEdit_CF1_7.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_8.text()=='') else self.lineEdit_CF1_8.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_9.text()=='') else self.lineEdit_CF1_9.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF1_10.text()=='') else self.lineEdit_CF1_10.text()) + '}\r\n'
 
         blueColor = QColor(0, 0, 255)
         self.textEdit_3.setTextColor(blueColor)
@@ -140,7 +181,10 @@ class qt(QMainWindow):
                    ('0' if (self.lineEdit_CF2_4.text()=='') else self.lineEdit_CF2_4.text()) + ',' + \
                    ('0' if (self.lineEdit_CF2_5.text()=='') else self.lineEdit_CF2_5.text()) + ',' + \
                    ('0' if (self.lineEdit_CF2_6.text()=='') else self.lineEdit_CF2_6.text()) + ',' + \
-                   ('0' if (self.lineEdit_CF2_7.text()=='') else self.lineEdit_CF2_7.text()) + '}\r\n'
+                   ('0' if (self.lineEdit_CF2_7.text()=='') else self.lineEdit_CF2_7.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_8.text()=='') else self.lineEdit_CF2_7.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_9.text()=='') else self.lineEdit_CF2_7.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF2_10.text()=='') else self.lineEdit_CF2_10.text()) + '}\r\n'
 
         blueColor = QColor(0, 0, 255)
         self.textEdit_3.setTextColor(blueColor)
@@ -149,6 +193,32 @@ class qt(QMainWindow):
         self.textEdit_3.setTextColor(blackColor)
 
         ser.write(cfg2text.encode())
+        self.pushBtnClicked = True
+
+    def send_cfg3(self):
+        print("send cfg3")
+        if self.ConnectStatus == 0:
+            return
+
+        cfg3text = "{CF3:" + \
+                   ('0' if (self.lineEdit_CF3_1.text()=='') else self.lineEdit_CF3_1.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_2.text()=='') else self.lineEdit_CF3_2.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_3.text()=='') else self.lineEdit_CF3_3.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_4.text()=='') else self.lineEdit_CF3_4.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_5.text()=='') else self.lineEdit_CF3_5.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_6.text()=='') else self.lineEdit_CF3_6.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_7.text()=='') else self.lineEdit_CF3_7.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_8.text()=='') else self.lineEdit_CF3_8.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_9.text()=='') else self.lineEdit_CF3_9.text()) + ',' + \
+                   ('0' if (self.lineEdit_CF3_10.text()=='') else self.lineEdit_CF3_10.text()) + '}\r\n'
+
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
+        self.textEdit_3.append(str(cfg3text))
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
+        ser.write(cfg3text.encode())
         self.pushBtnClicked = True
 
     #READ CF1 array values
@@ -183,17 +253,35 @@ class qt(QMainWindow):
         ser.write(cfg2text.encode())
         self.pushBtnClicked = True
 
+    def read_cfg3(self):
+        print("read cfg3")
+        if self.ConnectStatus == 0:
+            return
+
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
+        cfg3text = "{RD3}\r\n"
+        self.textEdit_3.append(str(cfg3text))
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
+        ser.write(cfg3text.encode())
+        self.pushBtnClicked = True
+
     def loop_finished(self):
         print('Loop Finished')
 
     def clear_disconnect(self):
-        self.lineEdit_1.clear()
-        self.lineEdit_2.clear()
-        self.lineEdit_3.clear()
-        self.lineEdit_4.clear()
-        self.lineEdit_5.clear()
-        self.lineEdit_6.clear()
-        self.lineEdit_7.clear()
+        self.lineEdit_CF1_1.clear()
+        self.lineEdit_CF1_2.clear()
+        self.lineEdit_CF1_3.clear()
+        self.lineEdit_CF1_4.clear()
+        self.lineEdit_CF1_5.clear()
+        self.lineEdit_CF1_6.clear()
+        self.lineEdit_CF1_7.clear()
+        self.lineEdit_CF1_8.clear()
+        self.lineEdit_CF1_9.clear()
+        self.lineEdit_CF1_10.clear()
 
         self.lineEdit_CF2_1.clear()
         self.lineEdit_CF2_2.clear()
@@ -202,10 +290,24 @@ class qt(QMainWindow):
         self.lineEdit_CF2_5.clear()
         self.lineEdit_CF2_6.clear()
         self.lineEdit_CF2_7.clear()
+        self.lineEdit_CF2_8.clear()
+        self.lineEdit_CF2_9.clear()
+        self.lineEdit_CF2_10.clear()
+
+        self.lineEdit_CF3_1.clear()
+        self.lineEdit_CF3_2.clear()
+        self.lineEdit_CF3_3.clear()
+        self.lineEdit_CF3_4.clear()
+        self.lineEdit_CF3_5.clear()
+        self.lineEdit_CF3_6.clear()
+        self.lineEdit_CF3_7.clear()
+        self.lineEdit_CF3_8.clear()
+        self.lineEdit_CF3_9.clear()
+        self.lineEdit_CF3_10.clear()
 
         redColor = QColor(255, 0, 0)
         self.textEdit_3.setTextColor(redColor)
-        endText = "\r\n==================================== DISCONNECTED ====================================\r\n"
+        endText = "\r\n=============================== DISCONNECTED ===============================\r\n"
         self.textEdit_3.append(endText)
 
         blackColor = QColor(0, 0, 0)
@@ -245,12 +347,6 @@ class qt(QMainWindow):
             else:
                 self.Port = "UART"
 
-                blueColor = QColor(0, 0, 255)
-                self.textEdit_3.setTextColor(blueColor)
-                self.textEdit_3.append(mytext)
-                blackColor = QColor(0, 0, 0)
-                self.textEdit_3.setTextColor(blackColor)
-
                 ser = serial.Serial(self.cb_Port.currentText(), 115200, timeout=1)
                 ser.write(mytext.encode())
 
@@ -270,6 +366,18 @@ class qt(QMainWindow):
             self.label_5.setStyleSheet('color: red')
             print('start loop')
             return
+
+        else:
+            redColor = QColor(255, 0, 0)
+            self.textEdit_3.setTextColor(redColor)
+            startText = "\r\n================================ CONNECTED ================================\r\n"
+            self.textEdit_3.append(startText)
+
+            blueColor = QColor(0, 0, 255)
+            self.textEdit_3.setTextColor(blueColor)
+            self.textEdit_3.append(mytext)
+            blackColor = QColor(0, 0, 0)
+            self.textEdit_3.setTextColor(blackColor)
 
         if (self.Port == "UART"):
             self.worker = Worker()
@@ -313,18 +421,19 @@ class qt(QMainWindow):
             if len(self.group) == 2 :
                 self.values = self.parseSerialMsg(i)
 
-                if self.group[0] == '{CF1':
-                    self.lineEdit_1.setText(self.values[0])
-                    self.lineEdit_2.setText(self.values[1])
-                    self.lineEdit_3.setText(self.values[2])
-                    self.lineEdit_4.setText(self.values[3])
-                    self.lineEdit_5.setText(self.values[4])
-                    self.lineEdit_6.setText(self.values[5])
-                    self.lineEdit_7.setText(self.values[6])
+                if self.group[0] == '{CF1' and len(self.values) >= 10:
+                    self.lineEdit_CF1_1.setText(self.values[0])
+                    self.lineEdit_CF1_2.setText(self.values[1])
+                    self.lineEdit_CF1_3.setText(self.values[2])
+                    self.lineEdit_CF1_4.setText(self.values[3])
+                    self.lineEdit_CF1_5.setText(self.values[4])
+                    self.lineEdit_CF1_6.setText(self.values[5])
+                    self.lineEdit_CF1_7.setText(self.values[6])
+                    self.lineEdit_CF1_8.setText(self.values[7])
+                    self.lineEdit_CF1_9.setText(self.values[8])
+                    self.lineEdit_CF1_10.setText(self.values[9])
 
                     if self.getAll == 1:
-                        self.getAll = 0
-
                         blueColor = QColor(0, 0, 255)
                         self.textEdit_3.setTextColor(blueColor)
                         cfg2text = "{RD2}\r\n"
@@ -335,7 +444,7 @@ class qt(QMainWindow):
                         ser.write(cfg2text.encode())
                         self.pushBtnClicked = True
 
-                if self.group[0] == '{CF2':
+                if self.group[0] == '{CF2' and len(self.values) >= 10:
                     self.lineEdit_CF2_1.setText(self.values[0])
                     self.lineEdit_CF2_2.setText(self.values[1])
                     self.lineEdit_CF2_3.setText(self.values[2])
@@ -343,6 +452,34 @@ class qt(QMainWindow):
                     self.lineEdit_CF2_5.setText(self.values[4])
                     self.lineEdit_CF2_6.setText(self.values[5])
                     self.lineEdit_CF2_7.setText(self.values[6])
+                    self.lineEdit_CF2_8.setText(self.values[7])
+                    self.lineEdit_CF2_9.setText(self.values[8])
+                    self.lineEdit_CF2_10.setText(self.values[9])
+
+                    if self.getAll == 1:
+                        self.getAll = 0
+
+                        blueColor = QColor(0, 0, 255)
+                        self.textEdit_3.setTextColor(blueColor)
+                        cfg3text = "{RD3}\r\n"
+                        self.textEdit_3.append(str(cfg3text))
+                        blackColor = QColor(0, 0, 0)
+                        self.textEdit_3.setTextColor(blackColor)
+
+                        ser.write(cfg3text.encode())
+                        self.pushBtnClicked = True
+
+                if self.group[0] == '{CF3' and len(self.values) >= 10:
+                    self.lineEdit_CF3_1.setText(self.values[0])
+                    self.lineEdit_CF3_2.setText(self.values[1])
+                    self.lineEdit_CF3_3.setText(self.values[2])
+                    self.lineEdit_CF3_4.setText(self.values[3])
+                    self.lineEdit_CF3_5.setText(self.values[4])
+                    self.lineEdit_CF3_6.setText(self.values[5])
+                    self.lineEdit_CF3_7.setText(self.values[6])
+                    self.lineEdit_CF3_8.setText(self.values[7])
+                    self.lineEdit_CF3_9.setText(self.values[8])
+                    self.lineEdit_CF3_10.setText(self.values[9])
 
 
     # TXT Save
