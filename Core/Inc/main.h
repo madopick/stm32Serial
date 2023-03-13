@@ -58,6 +58,7 @@ void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size);
 #define BFLAG_WR1								 	(1 << 7)
 #define BFLAG_WR2								 	(1 << 8)
 #define BFLAG_WR3								 	(1 << 9)
+#define BFLAG_RDA								 	(1 << 10)
 
 
 
@@ -73,6 +74,7 @@ typedef enum
 	RD2_HEADER,
 	RD3_HEADER,
 	RD4_HEADER,
+	RDALL_HEADER,
 } eREQ_HEADER_t;
 
 

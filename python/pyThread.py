@@ -54,25 +54,40 @@ def serial_ports():
 class Worker(QObject):
     finished = pyqtSignal()
     intReady = pyqtSignal(str)
+    byteReady = pyqtSignal(list)
 
     @pyqtSlot()
     def __init__(self):
         super(Worker, self).__init__()
         self.working = True
+        self.byte_request = True
 
     def work(self):
         while self.working:
             if ser.isOpen():
-                line = ser.readline().decode('utf-8')
+                #byte operartion
+                if self.byte_request == True:
+                    line = ser.read(122)
+                #ASCII operation
+                else:
+                    line = ser.readline()
             else:
-                line = ''
+                line = b''
 
-            if line != '':
+            if line != b'':
                 time.sleep(0.1)
-                self.intReady.emit(line)
+
+                databyte = list(line)
+                #print(databyte)
+
+                if self.byte_request == True:
+                    self.byteReady.emit(databyte)
+                    self.byte_request = False
+
+                else:
+                    self.intReady.emit(line.decode('utf-8'))
 
         self.finished.emit()
-
 
 class qt(QMainWindow):
 
@@ -338,8 +353,8 @@ class qt(QMainWindow):
 
         #Verify the correct COM Port
         try:
-            mytext = "{RD1}\r\n"  # Send first enter
-            self.getAll = 1
+            mytext = "{RDA}\r\n"  # Send first enter
+            self.getAll = 0
 
             if(self.cb_Port.currentText() == "USB"):
                 print("USB HID Communication")
@@ -387,6 +402,7 @@ class qt(QMainWindow):
             self.thread.started.connect(self.worker.work)
 
             self.worker.intReady.connect(self.onIntReady)
+            self.worker.byteReady.connect(self.onByteReady)
 
             self.worker.finished.connect(self.loop_finished)
             self.worker.finished.connect(self.thread.quit)
@@ -405,12 +421,65 @@ class qt(QMainWindow):
         #result = [value.strip() for value in str.split(':')[1].split(',')]
         result = [value.strip() for value in str.split(':')[1].replace('}','').split(',')]
 
-        for idx in result:
-            print(idx)
+        #for idx in result:
+        #    print(idx)
 
         return result
 
-    #Serial Receiving Packets
+
+    # Serial (in bytes) Receiving Packets
+    def onByteReady(self, data):
+        print("onByteReady")
+        #print(data)
+        int_val = []
+
+        for x in range(0,81):
+            start = (x*4)+2
+            end = start + 4
+            res = int.from_bytes(data[start:end], "little")
+            if res > 2147483647:
+                 res = res - 4294967296
+            int_val.append(res)
+
+
+        for x in range(0, 30):
+            print(int_val[x])
+
+        self.lineEdit_CF1_1.setText(str(int_val[0]))
+        self.lineEdit_CF1_2.setText(str(int_val[1]))
+        self.lineEdit_CF1_3.setText(str(int_val[2]))
+        self.lineEdit_CF1_4.setText(str(int_val[3]))
+        self.lineEdit_CF1_5.setText(str(int_val[4]))
+        self.lineEdit_CF1_6.setText(str(int_val[5]))
+        self.lineEdit_CF1_7.setText(str(int_val[6]))
+        self.lineEdit_CF1_8.setText(str(int_val[7]))
+        self.lineEdit_CF1_9.setText(str(int_val[8]))
+        self.lineEdit_CF1_10.setText(str(int_val[9]))
+
+        self.lineEdit_CF2_1.setText(str(int_val[10]))
+        self.lineEdit_CF2_2.setText(str(int_val[11]))
+        self.lineEdit_CF2_3.setText(str(int_val[12]))
+        self.lineEdit_CF2_4.setText(str(int_val[13]))
+        self.lineEdit_CF2_5.setText(str(int_val[14]))
+        self.lineEdit_CF2_6.setText(str(int_val[15]))
+        self.lineEdit_CF2_7.setText(str(int_val[16]))
+        self.lineEdit_CF2_8.setText(str(int_val[17]))
+        self.lineEdit_CF2_9.setText(str(int_val[18]))
+        self.lineEdit_CF2_10.setText(str(int_val[19]))
+
+        self.lineEdit_CF3_1.setText(str(int_val[20]))
+        self.lineEdit_CF3_2.setText(str(int_val[21]))
+        self.lineEdit_CF3_3.setText(str(int_val[22]))
+        self.lineEdit_CF3_4.setText(str(int_val[23]))
+        self.lineEdit_CF3_5.setText(str(int_val[24]))
+        self.lineEdit_CF3_6.setText(str(int_val[25]))
+        self.lineEdit_CF3_7.setText(str(int_val[26]))
+        self.lineEdit_CF3_8.setText(str(int_val[27]))
+        self.lineEdit_CF3_9.setText(str(int_val[28]))
+        self.lineEdit_CF3_10.setText(str(int_val[29]))
+
+
+    #Serial (in utf-8) Receiving Packets
     def onIntReady(self, i):
         print('SerialRead')
 

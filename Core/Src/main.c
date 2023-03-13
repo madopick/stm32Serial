@@ -67,7 +67,7 @@ static uint16_t u16_lenCnt = 0;
  * PARSING HEADER, Used in FW CONFIG - READ/WRITE Process
  **********************************************************/
 #define CFG_LENGTH 				10
-#define CFG_HEADER_NUM 			8
+#define CFG_HEADER_NUM 			10
 #define CFG_HEADER_CHARS_LEN 	5			//num of char for header
 #define CFG_HEADER_READ 		5			//Max index for write, above this index is read command.
 #define STRLENMAX				256
@@ -81,7 +81,9 @@ static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 	"{CF4:",
 	"{RD1}",
 	"{RD2}",
-	"{RD3}"
+	"{RD3}",
+	"{RD4}",
+	"{RDA}"
 };
 
 
@@ -198,6 +200,22 @@ int main(void)
 		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, strlen(sendStr), 0xFFFF);
 
 		  bitFlag 	&= ~BFLAG_RD3;
+	  }
+	  else if (bitFlag & BFLAG_RDA)
+	  {
+		  /* use byte array stream */
+		  //printf("send byte array\r\n");
+
+		  memset (sendStr, 0, STRLENMAX);
+		  sendStr[0] = 0x10;
+		  sendStr[1] = 0x11;
+
+		  memcpy(&sendStr[2], i32_resCF1, 40);
+		  memcpy(&sendStr[42], i32_resCF2, 40);
+		  memcpy(&sendStr[82], i32_resCF3, 40);
+		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, 122, 0xFFFF);
+
+		  bitFlag 	&= ~BFLAG_RDA;
 	  }
 	  else if (bitFlag & BFLAG_WR1)
 	  {
@@ -672,6 +690,10 @@ static void vShell_cmdParse(char *input)
 
 					case RD3_HEADER:
 						bitFlag |= BFLAG_RD3;
+						break;
+
+					case RDALL_HEADER:
+						bitFlag |= BFLAG_RDA;
 						break;
 
 					default:
