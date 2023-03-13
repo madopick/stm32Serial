@@ -336,7 +336,6 @@ class qt(QMainWindow):
         self.label_5.setStyleSheet('color: red')
         ser.close()
 
-
     def start_loop(self):
         print('start loop')
         global ser
@@ -429,54 +428,56 @@ class qt(QMainWindow):
 
     # Serial (in bytes) Receiving Packets
     def onByteReady(self, data):
-        print("onByteReady")
+        #print("onByteReady")
         #print(data)
         int_val = []
 
-        for x in range(0,81):
-            start = (x*4)+2
-            end = start + 4
-            res = int.from_bytes(data[start:end], "little")
-            if res > 2147483647:
-                 res = res - 4294967296
-            int_val.append(res)
+        if data[0] == 16 and data[1] == 17:
+            print("byte header OK")
 
+            for x in range(0,81):
+                start = (x*4)+2
+                end = start + 4
+                res = int.from_bytes(data[start:end], "little")
+                if res > 2147483647:
+                     res = res - 4294967296
+                int_val.append(res)
 
-        for x in range(0, 30):
-            print(int_val[x])
+            for x in range(0, 30):
+                print(int_val[x])
 
-        self.lineEdit_CF1_1.setText(str(int_val[0]))
-        self.lineEdit_CF1_2.setText(str(int_val[1]))
-        self.lineEdit_CF1_3.setText(str(int_val[2]))
-        self.lineEdit_CF1_4.setText(str(int_val[3]))
-        self.lineEdit_CF1_5.setText(str(int_val[4]))
-        self.lineEdit_CF1_6.setText(str(int_val[5]))
-        self.lineEdit_CF1_7.setText(str(int_val[6]))
-        self.lineEdit_CF1_8.setText(str(int_val[7]))
-        self.lineEdit_CF1_9.setText(str(int_val[8]))
-        self.lineEdit_CF1_10.setText(str(int_val[9]))
+            self.lineEdit_CF1_1.setText(str(int_val[0]))
+            self.lineEdit_CF1_2.setText(str(int_val[1]))
+            self.lineEdit_CF1_3.setText(str(int_val[2]))
+            self.lineEdit_CF1_4.setText(str(int_val[3]))
+            self.lineEdit_CF1_5.setText(str(int_val[4]))
+            self.lineEdit_CF1_6.setText(str(int_val[5]))
+            self.lineEdit_CF1_7.setText(str(int_val[6]))
+            self.lineEdit_CF1_8.setText(str(int_val[7]))
+            self.lineEdit_CF1_9.setText(str(int_val[8]))
+            self.lineEdit_CF1_10.setText(str(int_val[9]))
 
-        self.lineEdit_CF2_1.setText(str(int_val[10]))
-        self.lineEdit_CF2_2.setText(str(int_val[11]))
-        self.lineEdit_CF2_3.setText(str(int_val[12]))
-        self.lineEdit_CF2_4.setText(str(int_val[13]))
-        self.lineEdit_CF2_5.setText(str(int_val[14]))
-        self.lineEdit_CF2_6.setText(str(int_val[15]))
-        self.lineEdit_CF2_7.setText(str(int_val[16]))
-        self.lineEdit_CF2_8.setText(str(int_val[17]))
-        self.lineEdit_CF2_9.setText(str(int_val[18]))
-        self.lineEdit_CF2_10.setText(str(int_val[19]))
+            self.lineEdit_CF2_1.setText(str(int_val[10]))
+            self.lineEdit_CF2_2.setText(str(int_val[11]))
+            self.lineEdit_CF2_3.setText(str(int_val[12]))
+            self.lineEdit_CF2_4.setText(str(int_val[13]))
+            self.lineEdit_CF2_5.setText(str(int_val[14]))
+            self.lineEdit_CF2_6.setText(str(int_val[15]))
+            self.lineEdit_CF2_7.setText(str(int_val[16]))
+            self.lineEdit_CF2_8.setText(str(int_val[17]))
+            self.lineEdit_CF2_9.setText(str(int_val[18]))
+            self.lineEdit_CF2_10.setText(str(int_val[19]))
 
-        self.lineEdit_CF3_1.setText(str(int_val[20]))
-        self.lineEdit_CF3_2.setText(str(int_val[21]))
-        self.lineEdit_CF3_3.setText(str(int_val[22]))
-        self.lineEdit_CF3_4.setText(str(int_val[23]))
-        self.lineEdit_CF3_5.setText(str(int_val[24]))
-        self.lineEdit_CF3_6.setText(str(int_val[25]))
-        self.lineEdit_CF3_7.setText(str(int_val[26]))
-        self.lineEdit_CF3_8.setText(str(int_val[27]))
-        self.lineEdit_CF3_9.setText(str(int_val[28]))
-        self.lineEdit_CF3_10.setText(str(int_val[29]))
+            self.lineEdit_CF3_1.setText(str(int_val[20]))
+            self.lineEdit_CF3_2.setText(str(int_val[21]))
+            self.lineEdit_CF3_3.setText(str(int_val[22]))
+            self.lineEdit_CF3_4.setText(str(int_val[23]))
+            self.lineEdit_CF3_5.setText(str(int_val[24]))
+            self.lineEdit_CF3_6.setText(str(int_val[25]))
+            self.lineEdit_CF3_7.setText(str(int_val[26]))
+            self.lineEdit_CF3_8.setText(str(int_val[27]))
+            self.lineEdit_CF3_9.setText(str(int_val[28]))
+            self.lineEdit_CF3_10.setText(str(int_val[29]))
 
 
     #Serial (in utf-8) Receiving Packets
@@ -586,9 +587,38 @@ class qt(QMainWindow):
 
         self.textEdit_3.setText('')
 
+    # READ CMD BUTTON
+    def on_pushButton_4_clicked(self):
+        print('Read All Value')
+
+        if self.ConnectStatus == 0:
+            return
+
+        # Send data from serial port:
+        if self.pushBtnClicked:
+            self.pushBtnClicked = False
+            return
+
+        mytext = "{RDA}\r\n"
+        ser.flushInput()
+
+        blueColor = QColor(0, 0, 255)
+        self.textEdit_3.setTextColor(blueColor)
+        self.textEdit_3.append(mytext)
+        blackColor = QColor(0, 0, 0)
+        self.textEdit_3.setTextColor(blackColor)
+
+        self.worker.byte_request = True
+        ser.write(mytext.encode())
+        self.pushBtnClicked = True
+
+
     #SEND CMD BUTTON
     def on_pushButton_3_clicked(self):
         print('Send to serial')
+
+        if self.ConnectStatus == 0:
+            return
 
         #Send data from serial port:
         if self.pushBtnClicked:

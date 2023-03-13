@@ -210,9 +210,9 @@ int main(void)
 		  sendStr[0] = 0x10;
 		  sendStr[1] = 0x11;
 
-		  memcpy(&sendStr[2], i32_resCF1, 40);
-		  memcpy(&sendStr[42], i32_resCF2, 40);
-		  memcpy(&sendStr[82], i32_resCF3, 40);
+		  memcpy(&sendStr[2], i32_resCF1, CFG_LENGTH * sizeof(i32_resCF1[0]));
+		  memcpy(&sendStr[42], i32_resCF2, CFG_LENGTH * sizeof(i32_resCF2[0]));
+		  memcpy(&sendStr[82], i32_resCF3, CFG_LENGTH * sizeof(i32_resCF3[0]));
 		  HAL_UART_Transmit(&huart2, (uint8_t *)sendStr, 122, 0xFFFF);
 
 		  bitFlag 	&= ~BFLAG_RDA;
