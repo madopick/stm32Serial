@@ -735,7 +735,15 @@ class qt(QMainWindow):
 
         #if text edit is empty then send write command to update CF3 using byte methods
         if self.textEdit_2.toPlainText() == '':
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle("Warning!!!")
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setText("All Config Value are over written")
+            msgBox.exec()
+
             bufferByte = bytearray("{CFA:", 'utf-8')
+            bufferByte.extend(self.getCF1values_inbytes())
+            bufferByte.extend(self.getCF2values_inbytes())
             bufferByte.extend(self.getCF3values_inbytes())
 
             footer = bytearray("{\r\n", 'utf-8')

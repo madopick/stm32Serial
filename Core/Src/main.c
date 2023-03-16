@@ -641,6 +641,7 @@ void vUpdateBufferByte(char *pChar, int32_t *pInt32, uint16_t u16_size)
 	uint16_t u16_idx = 0;
 	uint16_t u16_int = 0;
 	uint8_t	u8_headerNfooter = u16_size - (CFG_HEADER_CHARS_LEN + 1);
+	uint8_t	u8_cf_idx = 0;
 
 	while (u16_idx < u8_headerNfooter)
 	{
@@ -649,7 +650,26 @@ void vUpdateBufferByte(char *pChar, int32_t *pInt32, uint16_t u16_size)
 
 		u16_idx += 4;
 		u16_int += 1;
+
+		/* Change to CF2 or CF3 buffer */
+		if (u16_int >= 10)
+		{
+			if (u8_cf_idx == 0)
+			{
+				pInt32 	= &i32_resCF2[0];
+				u16_int	= 0;
+			}
+			else
+			{
+				pInt32 	= &i32_resCF3[0];
+				u16_int	= 0;
+			}
+
+			u8_cf_idx++;
+		}
 	}
+
+
 
 }
 
@@ -689,7 +709,7 @@ static void vShell_cmdParse(char *input, uint16_t u16_size)
 						break;
 
 					case CFA_HEADER:
-						vUpdateBufferByte(pChar, i32_resCF3, u16_size);
+						vUpdateBufferByte(pChar, i32_resCF1, u16_size);
 						break;
 
 					default:
