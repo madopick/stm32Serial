@@ -443,8 +443,8 @@ class qt(QMainWindow):
                      res = res - 4294967296
                 int_val.append(res)
 
-            for x in range(0, 30):
-                print(int_val[x])
+            #for x in range(0, 30):
+            #    print(int_val[x])
 
             self.lineEdit_CF1_1.setText(str(int_val[0]))
             self.lineEdit_CF1_2.setText(str(int_val[1]))
@@ -551,6 +551,114 @@ class qt(QMainWindow):
                     self.lineEdit_CF3_9.setText(self.values[8])
                     self.lineEdit_CF3_10.setText(self.values[9])
 
+    # Get CF1 Form Value in byte
+    def getCF1values_inbytes(self):
+        returnByte = bytearray()
+
+        mytextInt = int(self.lineEdit_CF1_1.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_2.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_3.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_4.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_5.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_6.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_7.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_8.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_9.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF1_10.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        return returnByte
+
+    # Get CF2 Form Value in byte
+    def getCF2values_inbytes(self):
+        returnByte = bytearray()
+
+        mytextInt = int(self.lineEdit_CF2_1.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_2.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_3.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_4.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_5.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_6.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_7.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_8.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_9.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF2_10.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        return returnByte
+
+    #Get CF3 Form Value in byte
+    def getCF3values_inbytes(self):
+        returnByte = bytearray()
+
+        mytextInt = int(self.lineEdit_CF3_1.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_2.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_3.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_4.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_5.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_6.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_7.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_8.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_9.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        mytextInt = int(self.lineEdit_CF3_10.text())
+        returnByte.extend(mytextInt.to_bytes(4, 'big', signed=True))
+
+        return returnByte
+
 
     # TXT Save
     def on_pushButton_5_clicked(self):
@@ -625,15 +733,31 @@ class qt(QMainWindow):
             self.pushBtnClicked = False
             return
 
-        mytext = self.textEdit_2.toPlainText() + "\r\n"
+        #if text edit is empty then send write command to update CF3 using byte methods
+        if self.textEdit_2.toPlainText() == '':
+            bufferByte = bytearray("{CFA:", 'utf-8')
+            bufferByte.extend(self.getCF3values_inbytes())
 
-        blueColor = QColor(0, 0, 255)
-        self.textEdit_3.setTextColor(blueColor)
-        self.textEdit_3.append(mytext)
-        blackColor = QColor(0, 0, 0)
-        self.textEdit_3.setTextColor(blackColor)
+            footer = bytearray("{\r\n", 'utf-8')
+            bufferByte.extend(footer)
+            print(bufferByte)
 
-        ser.write(mytext.encode())
+            print(len(bufferByte))
+            ser.write(bufferByte)
+
+        #send input command by user in text edit 2
+        #Available command are: {MSG:, {CF1:, {CF2:, {CF3:, {CFA:, {RD1}, {RD2}, {RD3}, {RD4}, {RDA}
+        else:
+            mytext = self.textEdit_2.toPlainText() + "\r\n"
+
+            blueColor = QColor(0, 0, 255)
+            self.textEdit_3.setTextColor(blueColor)
+            self.textEdit_3.append(mytext)
+            blackColor = QColor(0, 0, 0)
+            self.textEdit_3.setTextColor(blackColor)
+
+            ser.write(mytext.encode())
+
         self.pushBtnClicked = True
 
 def run():

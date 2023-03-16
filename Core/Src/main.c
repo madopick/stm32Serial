@@ -78,7 +78,7 @@ static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 	"{CF1:",
 	"{CF2:",
 	"{CF3:",
-	"{CF4:",
+	"{CFA:",
 	"{RD1}",
 	"{RD2}",
 	"{RD3}",
@@ -632,14 +632,33 @@ void vUpdateBufferValue(char *input, char *pChar, char *pChar2, int32_t *pInt32)
 }
 
 
+/*********************************************************************
+ * @name	: updateBufferByte
+ * @brief	: Parsing receiving command from PC via UART (in byte)
+ *********************************************************************/
+void vUpdateBufferByte(char *pChar, int32_t *pInt32, uint16_t u16_size)
+{
+	uint16_t u16_idx = 0;
+	uint16_t u16_int = 0;
+	uint8_t	u8_headerNfooter = u16_size - (CFG_HEADER_CHARS_LEN + 1);
 
+	while (u16_idx < u8_headerNfooter)
+	{
+		pInt32[u16_int] = (pChar[u16_idx] << 24) | (pChar[u16_idx+1] << 16) |
+							(pChar[u16_idx+2] << 8) | pChar[u16_idx+3];
+
+		u16_idx += 4;
+		u16_int += 1;
+	}
+
+}
 
 /********************************************************
  * 	Parsing incoming message						   	*
  * 	Example: {MSG:1,23,21009,45,67,-18,25}				*
  * 			 {RD1}
  ********************************************************/
-static void vShell_cmdParse(char *input)
+static void vShell_cmdParse(char *input, uint16_t u16_size)
 {
 	for(uint8_t u8_idx = 0; u8_idx < CFG_HEADER_NUM; u8_idx++)
 	{
@@ -667,6 +686,10 @@ static void vShell_cmdParse(char *input)
 					case CF3_HEADER:
 						vUpdateBufferValue(input, pChar, pChar2, i32_resCF3);
 						bitFlag |= BFLAG_WR3;
+						break;
+
+					case CFA_HEADER:
+						vUpdateBufferByte(pChar, i32_resCF3, u16_size);
 						break;
 
 					default:
@@ -710,7 +733,7 @@ static void vShell_cmdParse(char *input)
 void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size)
 {
 	//printf("UART RX(%d): %s\r\n", u16_size, (char*)u8p_buffer);
-	vShell_cmdParse((char*)u8p_buffer);
+	vShell_cmdParse((char*)u8p_buffer, u16_size);
 }
 
 
