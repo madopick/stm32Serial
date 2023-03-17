@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>819</width>
-    <height>714</height>
+    <height>831</height>
    </rect>
   </property>
   <property name="cursor">
@@ -30,9 +30,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>420</y>
+      <y>550</y>
       <width>661</width>
-      <height>271</height>
+      <height>251</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout" rowstretch="0">
@@ -51,8 +51,8 @@
    <widget class="QWidget" name="formLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>690</y>
+      <x>10</x>
+      <y>810</y>
       <width>141</width>
       <height>21</height>
      </rect>
@@ -60,6 +60,12 @@
     <layout class="QFormLayout" name="formLayout_2">
      <item row="0" column="0">
       <widget class="QLabel" name="label_4">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Port Status</string>
        </property>
@@ -77,54 +83,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>20</y>
-      <width>231</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>Select Port:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="cb_Port">
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-         <property name="currentText">
-          <string/>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton">
-       <property name="text">
-        <string>CONNECT</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QPushButton" name="pushButton_5">
     <property name="geometry">
      <rect>
       <x>690</x>
-      <y>470</y>
+      <y>610</y>
       <width>111</width>
       <height>41</height>
      </rect>
@@ -180,30 +143,11 @@
      <string>SEND</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>690</y>
-      <width>171</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="text">
-     <string>Gathering / Sending Data (Rx/Tx)</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pb_Clr">
     <property name="geometry">
      <rect>
       <x>690</x>
-      <y>420</y>
+      <y>550</y>
       <width>111</width>
       <height>41</height>
      </rect>
@@ -216,7 +160,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>120</y>
+      <y>240</y>
       <width>231</width>
       <height>221</height>
      </rect>
@@ -992,7 +936,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>90</y>
+      <y>200</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -1010,7 +954,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>350</y>
+      <y>470</y>
       <width>231</width>
       <height>21</height>
      </rect>
@@ -1023,7 +967,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>380</y>
+      <y>500</y>
       <width>231</width>
       <height>21</height>
      </rect>
@@ -1036,7 +980,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>120</y>
+      <y>240</y>
       <width>231</width>
       <height>221</height>
      </rect>
@@ -1812,7 +1756,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>90</y>
+      <y>200</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -1830,7 +1774,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>350</y>
+      <y>470</y>
       <width>231</width>
       <height>21</height>
      </rect>
@@ -1843,7 +1787,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>380</y>
+      <y>500</y>
       <width>231</width>
       <height>21</height>
      </rect>
@@ -1856,7 +1800,7 @@
     <property name="geometry">
      <rect>
       <x>570</x>
-      <y>120</y>
+      <y>240</y>
       <width>231</width>
       <height>221</height>
      </rect>
@@ -2387,7 +2331,7 @@
     <property name="geometry">
      <rect>
       <x>570</x>
-      <y>90</y>
+      <y>200</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -2405,7 +2349,7 @@
     <property name="geometry">
      <rect>
       <x>570</x>
-      <y>350</y>
+      <y>470</y>
       <width>231</width>
       <height>21</height>
      </rect>
@@ -2418,7 +2362,7 @@
     <property name="geometry">
      <rect>
       <x>570</x>
-      <y>380</y>
+      <y>500</y>
       <width>231</width>
       <height>21</height>
      </rect>
@@ -2444,6 +2388,135 @@
     <property name="text">
      <string>READ</string>
     </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>231</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>PORT</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>70</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cb_Port">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="currentText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>BAUDRATE</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>45</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cb_baudrate">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="currentText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>CONNECT</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <action name="actionAna_Ekran">

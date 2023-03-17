@@ -154,6 +154,14 @@ class qt(QMainWindow):
             name = result[x]
             self.cb_Port.addItem(name)
         self.cb_Port.addItem("USB")
+
+        self.cb_baudrate.addItem("9600")
+        self.cb_baudrate.addItem("38400")
+        self.cb_baudrate.addItem("57600")
+        self.cb_baudrate.addItem("115200")
+        self.cb_baudrate.addItem("230400")
+        self.cb_baudrate.setCurrentIndex(3)
+
         print('QT init')
 
     # WRITE CF1 array values
@@ -352,7 +360,7 @@ class qt(QMainWindow):
 
         #Verify the correct COM Port
         try:
-            mytext = "{RDA}\r\n"  # Send first enter
+            mytext = "{RDA}\r\n"  # Get all config values
             self.getAll = 0
 
             if(self.cb_Port.currentText() == "USB"):
@@ -361,7 +369,7 @@ class qt(QMainWindow):
             else:
                 self.Port = "UART"
 
-                ser = serial.Serial(self.cb_Port.currentText(), 115200, timeout=1)
+                ser = serial.Serial(self.cb_Port.currentText(), self.cb_baudrate.currentText(), timeout=1)
                 ser.write(mytext.encode())
 
             if(self.ConnectStatus == 0):
