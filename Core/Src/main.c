@@ -91,25 +91,32 @@ static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 /* bit flag */
 uint16_t bitFlag;
 
-/* Buffer used for transmission */
-uint8_t aTxBuffer[] = " ****I2C_TwoBoards communication based on IT****  ****I2C_TwoBoards communication based on IT****  ****I2C_TwoBoards communication based on IT**** ";
+/* Buffer used for I2C1 transmission */
+uint8_t aTxBufferI2C1[] = " ****I2C_TwoBoards communication based on IT****  ";
 
-/* Buffer used for reception */
-uint8_t aRxBuffer[RXBUFFERSIZE];
+/* Buffer used for I2C / SPI reception */
+uint8_t aRxBufferI2C1[RXBUFFERSIZE];
 uint8_t aRxBufferI2C3[RXBUFFERSIZE];
 
+/* Buffer for Master  */
 int32_t i32_resCF1[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
 int32_t i32_resCF2[CFG_LENGTH] = {20,156,52,-37,20,145,367,46,-12,19};
 int32_t i32_resCF3[CFG_LENGTH] = {35,16,2022,-457,560,15,97,46,12,-67};
 
+/* Buffer for Slave */
+int32_t i32_resCF1Slave[CFG_LENGTH] = {};
+int32_t i32_resCF2Slave[CFG_LENGTH] = {};
+int32_t i32_resCF3Slave[CFG_LENGTH] = {};
 
+/* Buffer for ASCII UART Master <-> PC transmission */
 char sendStr[STRLENMAX];
 
-/**
+
+/*******************************************************************
   * @brief  Retargets the C library printf function to the USART.
   * @param  None
   * @retval None
-  */
+  ******************************************************************/
 PUTCHAR_PROTOTYPE
 {
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
@@ -120,10 +127,10 @@ PUTCHAR_PROTOTYPE
 
 
 
-/**
+/********************************************************************
   * @brief  The application entry point.
   * @retval int
-  */
+  *******************************************************************/
 int main(void)
 {
   /* MCU Configuration--------------------------------------------------------*/
@@ -139,7 +146,7 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
 
-  /*##-1- Configure the I2C1 peripheral ######################################*/
+  /*##-1- Configure the I2C1 (Master) peripheral ######################################*/
   hi2c1.Instance             = I2Cx;
   hi2c1.Init.AddressingMode  = I2C_ADDRESSINGMODE_10BIT;
   hi2c1.Init.ClockSpeed      = 400000;
@@ -156,7 +163,7 @@ int main(void)
 	  Error_Handler();
   }
 
-  /*##-1- Configure the I2C3 peripheral ######################################*/
+  /*##-1- Configure the I2C3 (Slave) peripheral ######################################*/
   hi2c3.Instance 			= I2C3;
   hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
   hi2c3.Init.ClockSpeed 	= 400000;
@@ -178,6 +185,7 @@ int main(void)
 
   while (1)
   {
+	  //UART Receiving Process.
 	  if (bitFlag & BFLAG_UART_RCV)
 	  {
 		  uartProcessing (u8arr_uartEvent, u16_lenCnt - 2); // remove \r & \n
@@ -186,6 +194,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_UART_RCV;
 	  }
+	  //Process for Config 1 Value Read.
 	  else if (bitFlag & BFLAG_RD1)
 	  {
 		  memset (sendStr, 0, STRLENMAX);
@@ -196,6 +205,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RD1;
 	  }
+	  //Process for Config 2 Value Read.
 	  else if (bitFlag & BFLAG_RD2)
 	  {
 		  memset (sendStr, 0, STRLENMAX);
@@ -206,6 +216,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RD2;
 	  }
+	  //Process for Config 3 Value Read.
 	  else if (bitFlag & BFLAG_RD3)
 	  {
 		  memset (sendStr, 0, STRLENMAX);
@@ -216,6 +227,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RD3;
 	  }
+	  //Process for All Config Value Read.
 	  else if (bitFlag & BFLAG_RDA)
 	  {
 		  /* use byte array stream */
@@ -232,24 +244,28 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RDA;
 	  }
+	  //Process for Config 1 Value Write.
 	  else if (bitFlag & BFLAG_WR1)
 	  {
 
 
 		  bitFlag 	&= ~BFLAG_WR1;
 	  }
+	  //Process for Config 2 Value Write.
 	  else if (bitFlag & BFLAG_WR2)
 	  {
 
 
 		  bitFlag 	&= ~BFLAG_WR2;
 	  }
+	  //Process for Config 3 Value Write.
 	  else if (bitFlag & BFLAG_WR3)
 	  {
 
 
 		  bitFlag 	&= ~BFLAG_WR3;
 	  }
+	  //Process for Blue button handler.
 	  else if (bitFlag & BFLAG_BTN)
 	  {
 //		  char sentMSG[128];
@@ -266,6 +282,7 @@ int main(void)
 		  bitFlag 	&= ~BFLAG_BTN;
 		  bitFlag 	|= BFLAG_I2CM_WR;
 	  }
+	  //Process for I2C1 Master Transmit & I2C3 Slave Receive.
 	  else if (bitFlag & BFLAG_I2CM_WR)
 	  {
 		  /* SLAVE I2CS3 Receive */
@@ -277,7 +294,7 @@ int main(void)
 
 
 		  /* SLAVE I2CM1 Transmit */
-		  if(HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)I2C3_ADDRESS, (uint8_t*)aTxBuffer, TXBUFFERSIZE, 100)!= HAL_OK)
+		  if(HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)I2C3_ADDRESS, (uint8_t*)aTxBufferI2C1, TXBUFFERSIZE, 100)!= HAL_OK)
 		  {
 			  Error_Handler();
 		  }
@@ -293,6 +310,7 @@ int main(void)
 		  bitFlag |= BFLAG_I2CM_RD;
 
 	  }
+	  //Process for I2C1 Master Receive & I2C3 Slave Transmit.
 	  else if (bitFlag & BFLAG_I2CM_RD)
 	  {
 		  while((HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY ) &&
@@ -311,7 +329,7 @@ int main(void)
 		  }
 
 		  /* SLAVE I2CM1 Receive */
-		  if(HAL_I2C_Master_Receive_IT(&hi2c1, (uint16_t)I2C3_ADDRESS, (uint8_t*)aRxBuffer, RXBUFFERSIZE)!= HAL_OK)
+		  if(HAL_I2C_Master_Receive_IT(&hi2c1, (uint16_t)I2C3_ADDRESS, (uint8_t*)aRxBufferI2C1, RXBUFFERSIZE)!= HAL_OK)
 		  {
 			  Error_Handler();
 		  }
@@ -319,12 +337,13 @@ int main(void)
 		  bitFlag 	&= ~BFLAG_I2CM_RD;
 
 	  }
+	  //Process for Master Transmite & Receive Buffer  comparison .
 	  else if (bitFlag & BFLAG_BUFFCOM)
 	  {
-		  printf("I2C1 RX: %s \r\n", aRxBuffer);
+		  printf("I2C1 RX: %s \r\n", aRxBufferI2C1);
 
 		  /*##-6- Compare the sent and received buffers ##############################*/
-		  if(Buffercmp((uint8_t*)aTxBuffer,(uint8_t*)aRxBuffer, RXBUFFERSIZE))
+		  if(Buffercmp((uint8_t*)aTxBufferI2C1,(uint8_t*)aRxBufferI2C1, RXBUFFERSIZE))
 		  {
 			  printf("Buffer compare Fail!!!\r\n\n");
 		  }
@@ -334,7 +353,7 @@ int main(void)
 		  }
 
 		  memset (aRxBufferI2C3, 0, RXBUFFERSIZE);
-		  memset (aRxBuffer, 0, RXBUFFERSIZE);
+		  memset (aRxBufferI2C1, 0, RXBUFFERSIZE);
 
 		  bitFlag 	&= ~BFLAG_BUFFCOM;
 	  }
@@ -354,7 +373,7 @@ void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
 	if (I2cHandle == &hi2c1)
 	{
-		printf("I2C1 TX OK\r\n");
+		//printf("I2C1 TX OK\r\n");
 	}
 	else if (I2cHandle == &hi2c3)
 	{
@@ -409,7 +428,7 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 	}
 	else if  (I2cHandle == &hi2c3)
 	{
-		printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
+		//printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
 	}
 }
 
