@@ -31,7 +31,8 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
-I2C_HandleTypeDef I2cHandle;
+I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c3;
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,14 +91,12 @@ static char str_cfg_header[CFG_HEADER_NUM][CFG_HEADER_CHARS_LEN] =
 /* bit flag */
 uint16_t bitFlag;
 
-/* I2C handler declaration */
-I2C_HandleTypeDef I2cHandle;
-
 /* Buffer used for transmission */
 uint8_t aTxBuffer[] = " ****I2C_TwoBoards communication based on IT****  ****I2C_TwoBoards communication based on IT****  ****I2C_TwoBoards communication based on IT**** ";
 
 /* Buffer used for reception */
 uint8_t aRxBuffer[RXBUFFERSIZE];
+uint8_t aRxBufferI2C3[RXBUFFERSIZE];
 
 int32_t i32_resCF1[CFG_LENGTH] = {10,256,512,37,10,-45,123,46,-78,89};
 int32_t i32_resCF2[CFG_LENGTH] = {20,156,52,-37,20,145,367,46,-12,19};
@@ -140,23 +139,39 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
 
-  /*##-1- Configure the I2C peripheral ######################################*/
-  I2cHandle.Instance             = I2Cx;
+  /*##-1- Configure the I2C1 peripheral ######################################*/
+  hi2c1.Instance             = I2Cx;
+  hi2c1.Init.AddressingMode  = I2C_ADDRESSINGMODE_10BIT;
+  hi2c1.Init.ClockSpeed      = 400000;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
+  hi2c1.Init.OwnAddress1     = I2C1_ADDRESS;
+  hi2c1.Init.OwnAddress2     = 0xFE;
 
-  I2cHandle.Init.AddressingMode  = I2C_ADDRESSINGMODE_10BIT;
-  I2cHandle.Init.ClockSpeed      = 400000;
-  I2cHandle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  I2cHandle.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
-  I2cHandle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  I2cHandle.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
-  I2cHandle.Init.OwnAddress1     = I2C_ADDRESS;
-  I2cHandle.Init.OwnAddress2     = 0xFE;
-
-  if(HAL_I2C_Init(&I2cHandle) != HAL_OK)
+  if(HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
 	  /* Initialization Error */
 	  Error_Handler();
   }
+
+  /*##-1- Configure the I2C3 peripheral ######################################*/
+  hi2c3.Instance 			= I2C3;
+  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
+  hi2c3.Init.ClockSpeed 	= 400000;
+  hi2c3.Init.DualAddressMode= I2C_DUALADDRESS_DISABLE;
+  hi2c3.Init.DutyCycle 		= I2C_DUTYCYCLE_16_9;
+  hi2c3.Init.GeneralCallMode= I2C_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode 	= I2C_NOSTRETCH_DISABLE;
+  hi2c3.Init.OwnAddress1 	= I2C3_ADDRESS;
+  hi2c3.Init.OwnAddress2 	= 0xFE;
+
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  {
+	  Error_Handler();
+  }
+
 
   /* Infinite loop */
   printf("init OK\r\n");
@@ -237,98 +252,93 @@ int main(void)
 	  }
 	  else if (bitFlag & BFLAG_BTN)
 	  {
-		  char sentMSG[128];
-		  snprintf(sentMSG, sizeof(sentMSG),"{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
-				  i32_resCF1[0], i32_resCF1[1], i32_resCF1[2], i32_resCF1[3],
-				  i32_resCF1[4], i32_resCF1[5], i32_resCF1[6]);
-		  printf("%s",sentMSG);
+//		  char sentMSG[128];
+//		  snprintf(sentMSG, sizeof(sentMSG),"{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
+//				  i32_resCF1[0], i32_resCF1[1], i32_resCF1[2], i32_resCF1[3],
+//				  i32_resCF1[4], i32_resCF1[5], i32_resCF1[6]);
+//		  printf("%s",sentMSG);
 
-		  //printf("CFG1: 100,200,23,-56,90,-4987,10\r\n");
+//		  printf("CFG1: 100,200,23,-56,90,-4987,10\r\n");
 
-		  HAL_Delay(1000);
+
+		  HAL_Delay(500);
 		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 		  bitFlag 	&= ~BFLAG_BTN;
+		  bitFlag 	|= BFLAG_I2CM_WR;
 	  }
-	  else if (bitFlag & BFLAG_I2C_WR)
+	  else if (bitFlag & BFLAG_I2CM_WR)
 	  {
-
-#ifdef MASTER_BOARD
-		  printf("Master I2C Sending \r\n\n");
-
-		  do
+		  /* SLAVE I2CS3 Receive */
+		  if(HAL_I2C_Slave_Receive_IT(&hi2c3, (uint8_t *)aRxBufferI2C3, RXBUFFERSIZE) != HAL_OK)
 		  {
-			  /*##-2- Start the transmission process #####################################*/
-			  if(HAL_I2C_Master_Transmit_IT(&I2cHandle, (uint16_t)I2C_ADDRESS, (uint8_t*)aTxBuffer, TXBUFFERSIZE)!= HAL_OK)
-			  {
-				  Error_Handler();
-			  }
-
-			  /*##-3- Wait for the end of the transfer ###################################*/
-			  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
-			  {
-			  }
-
-			  /* When Acknowledge failure occurs (Slave don't acknowledge its address)
-		  	  Master restarts communication */
+			  /* Transfer error in reception process */
+			  Error_Handler();
 		  }
-		  while(HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
 
-		  bitFlag 	&= ~BFLAG_I2C_WR;
-#endif
+
+		  /* SLAVE I2CM1 Transmit */
+		  if(HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)I2C3_ADDRESS, (uint8_t*)aTxBuffer, TXBUFFERSIZE, 100)!= HAL_OK)
+		  {
+			  Error_Handler();
+		  }
+
+		  while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY )
+		  {
+
+		  }
+
+		  bitFlag 	&= ~BFLAG_I2CM_WR;
+
+		  //printf("I2CM1 WR Finish\r\n\n");
+		  bitFlag |= BFLAG_I2CM_RD;
 
 	  }
-	  else if (bitFlag & BFLAG_I2C_RD)
+	  else if (bitFlag & BFLAG_I2CM_RD)
 	  {
-
-#ifdef MASTER_BOARD
-		  /*##-5- Wait for the end of the transfer ###################################*/
-		  /*Before starting a new communication transfer, you need to check the current
-			state of the peripheral; if it’s busy you need to wait for the end of current
-			transfer before starting a new one.
-			For simplicity reasons, this example is just waiting till the end of the
-			transfer, but application may perform other tasks while transfer operation
-			is ongoing. */
-		  while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
+		  while((HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY ) &&
+				(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY ))
 		  {
+
 		  }
+
+		  //printf("I2CM1 RD Start\r\n\n");
+
+		  /* SLAVE I2CS3 Transmit */
+		  if(HAL_I2C_Slave_Transmit_IT(&hi2c3, (uint8_t *)aRxBufferI2C3, RXBUFFERSIZE) != HAL_OK)
+		  {
+			  /* Transfer error in reception process */
+			  Error_Handler();
+		  }
+
+		  /* SLAVE I2CM1 Receive */
+		  if(HAL_I2C_Master_Receive_IT(&hi2c1, (uint16_t)I2C3_ADDRESS, (uint8_t*)aRxBuffer, RXBUFFERSIZE)!= HAL_OK)
+		  {
+			  Error_Handler();
+		  }
+
+		  bitFlag 	&= ~BFLAG_I2CM_RD;
+
+	  }
+	  else if (bitFlag & BFLAG_BUFFCOM)
+	  {
+		  printf("I2C1 RX: %s \r\n", aRxBuffer);
 
 		  /*##-6- Compare the sent and received buffers ##############################*/
 		  if(Buffercmp((uint8_t*)aTxBuffer,(uint8_t*)aRxBuffer, RXBUFFERSIZE))
 		  {
 			  printf("Buffer compare Fail!!!\r\n\n");
 		  }
+		  else
+		  {
+			  printf("Buffer compare OK\r\n\n");
+		  }
 
-		  bitFlag 	&= ~BFLAG_I2C_RD;
-#endif
+		  memset (aRxBufferI2C3, 0, RXBUFFERSIZE);
+		  memset (aRxBuffer, 0, RXBUFFERSIZE);
 
+		  bitFlag 	&= ~BFLAG_BUFFCOM;
 	  }
-	  else
-	  {
 
-#ifndef MASTER_BOARD
-		printf("Slave I2C Receiving \r\n\n");
-
-		if(HAL_I2C_Slave_Receive_IT(&I2cHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
-		{
-		  /* Transfer error in reception process */
-		  Error_Handler();
-		}
-
-		/*##-3- Wait for the end of the transfer ###################################*/
-		/*Before starting a new communication transfer, you need to check the current
-		state of the peripheral; if it’s busy you need to wait for the end of current
-		transfer before starting a new one.
-		For simplicity reasons, this example is just waiting till the end of the
-		transfer, but application may perform other tasks while transfer operation
-		is ongoing. */
-		while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
-		{
-		}
-
-		printf("I2C RX: %s \r\n", (char*)aRxBuffer);
-
-#endif
-	  }
   }
 }
 
@@ -340,21 +350,33 @@ int main(void)
   *         you can add your own implementation.
   * @retval None
   ***********************************************************************************/
-#ifdef MASTER_BOARD
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
-	/* Turn LED2 on: Transfer in transmission process is correct */
-	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+	if (I2cHandle == &hi2c1)
+	{
+		printf("I2C1 TX OK\r\n");
+	}
+	else if (I2cHandle == &hi2c3)
+	{
+
+	}
 
 }
-#else
+
 void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
-  /* Turn LED2 on: Transfer in transmission process is correct */
-	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+	if (I2cHandle == &hi2c1)
+	{
+		/* Turn LED2 on: Transfer in transmission process is correct */
+		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+	}
+	else if (I2cHandle == &hi2c3)
+	{
+		//printf("I2C3 TX OK\r\n");
+	}
 
 }
-#endif /* MASTER_BOARD */
+
 
 
 /*************************************************************************************
@@ -364,19 +386,33 @@ void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
   *         you can add your own implementation.
   * @retval None
   ************************************************************************************/
-#ifdef MASTER_BOARD
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
-  /* Turn LED2 on: Transfer in reception process is correct */
-	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+	if (I2cHandle == &hi2c1)
+	{
+		/* Turn LED2 on: Transfer in reception process is correct */
+		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+		bitFlag 	|= BFLAG_BUFFCOM;
+	}
+	else if  (I2cHandle == &hi2c3)
+	{
+		//printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
+	}
 }
-#else
+
 void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
-  /* Turn LED2 on: Transfer in reception process is correct */
-	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+	if (I2cHandle == &hi2c1)
+	{
+		/* Turn LED2 on: Transfer in reception process is correct */
+		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+	}
+	else if  (I2cHandle == &hi2c3)
+	{
+		printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
+	}
 }
-#endif /* MASTER_BOARD */
+
 
 
 
@@ -388,7 +424,15 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
   ************************************************************************************/
  void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *I2cHandle)
 {
-  printf("\r\nI2C ERROR \r\n\n");
+  if (I2cHandle == &hi2c1)
+  {
+	  printf("\r\nI2C1 ERROR \r\n\n");
+  }
+  else if (I2cHandle == &hi2c3)
+  {
+	  printf("\r\nI2C3 ERROR \r\n\n");
+  }
+
   while(1)
   {
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);

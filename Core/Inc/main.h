@@ -49,16 +49,19 @@ void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size);
 
 /* BIT FLAG */
 #define BFLAG_UART_RCV								(1 << 0)
-#define BFLAG_I2C_RD								(1 << 1)
-#define BFLAG_I2C_WR								(1 << 2)
-#define BFLAG_BTN								 	(1 << 3)
-#define BFLAG_RD1								 	(1 << 4)
-#define BFLAG_RD2								 	(1 << 5)
-#define BFLAG_RD3								 	(1 << 6)
-#define BFLAG_WR1								 	(1 << 7)
-#define BFLAG_WR2								 	(1 << 8)
-#define BFLAG_WR3								 	(1 << 9)
-#define BFLAG_RDA								 	(1 << 10)
+#define BFLAG_I2CM_RD								(1 << 1)
+#define BFLAG_I2CM_WR								(1 << 2)
+#define BFLAG_I2CS_RD								(1 << 3)
+#define BFLAG_I2CS_WR								(1 << 4)
+#define BFLAG_BTN								 	(1 << 5)
+#define BFLAG_RD1								 	(1 << 6)
+#define BFLAG_RD2								 	(1 << 7)
+#define BFLAG_RD3								 	(1 << 8)
+#define BFLAG_WR1								 	(1 << 9)
+#define BFLAG_WR2								 	(1 << 10)
+#define BFLAG_WR3								 	(1 << 11)
+#define BFLAG_RDA								 	(1 << 12)
+#define BFLAG_BUFFCOM								(1 << 13)
 
 
 
@@ -81,7 +84,8 @@ typedef enum
 
 /* I2C */
 #define MASTER_BOARD
-#define I2C_ADDRESS        0x30F
+#define I2C1_ADDRESS        0x30F
+#define I2C3_ADDRESS        0x40F
 
 /* Private defines -----------------------------------------------------------*/
 #define B1_Pin 				GPIO_PIN_13
@@ -110,7 +114,7 @@ typedef enum
 #define I2Cx_RELEASE_RESET()             __HAL_RCC_I2C1_RELEASE_RESET()
 
 /* Definition for I2Cx Pins */
-#define I2Cx_SCL_PIN                    GPIO_PIN_6
+#define I2Cx_SCL_PIN                    GPIO_PIN_8
 #define I2Cx_SCL_GPIO_PORT              GPIOB
 #define I2Cx_SCL_AF                     GPIO_AF4_I2C1
 #define I2Cx_SDA_PIN                    GPIO_PIN_9
