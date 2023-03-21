@@ -10,12 +10,17 @@
 
 import sys, os, serial, serial.tools.list_ports, warnings
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QColor
 import time
 from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QIntValidator
 import serial.tools.list_ports as port_list
+import argparse
+import pandas as pd
+import csv
 
 
 result = []
@@ -727,6 +732,102 @@ class qt(QMainWindow):
         self.worker.byte_request = True
         ser.write(mytext.encode())
         self.pushBtnClicked = True
+
+    #IMPORT button
+    def on_pb_import_clicked(self):
+        if self.pushBtnClicked:
+            self.pushBtnClicked = False
+            return
+        else:
+            self.pushBtnClicked = True
+
+        path = QFileDialog.getOpenFileName(self, 'Open CSV', os.getenv('HOME'), 'CSV(*.csv)')
+        if path[0] != '':
+            with open(path[0], newline='') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+
+                line_count = 0
+                line_config = 0
+
+                for row in csv_reader:
+                    if line_count == 0:
+                        column = ",\t".join(row)
+                        print(f'column are: {column}')
+                        line_count += 1
+
+                    elif line_count == 1:
+                        self.lineEdit_CF1_1.setText(row[0])
+                        self.lineEdit_CF1_2.setText(row[1])
+                        self.lineEdit_CF1_3.setText(row[2])
+                        self.lineEdit_CF1_4.setText(row[3])
+                        self.lineEdit_CF1_5.setText(row[4])
+                        self.lineEdit_CF1_6.setText(row[5])
+                        self.lineEdit_CF1_7.setText(row[6])
+                        self.lineEdit_CF1_8.setText(row[7])
+                        self.lineEdit_CF1_9.setText(row[8])
+                        self.lineEdit_CF1_10.setText(row[9])
+                        line_count += 1
+
+                    elif line_count == 2:
+                        self.lineEdit_CF2_1.setText(row[0])
+                        self.lineEdit_CF2_2.setText(row[1])
+                        self.lineEdit_CF2_3.setText(row[2])
+                        self.lineEdit_CF2_4.setText(row[3])
+                        self.lineEdit_CF2_5.setText(row[4])
+                        self.lineEdit_CF2_6.setText(row[5])
+                        self.lineEdit_CF2_7.setText(row[6])
+                        self.lineEdit_CF2_8.setText(row[7])
+                        self.lineEdit_CF2_9.setText(row[8])
+                        self.lineEdit_CF2_10.setText(row[9])
+                        line_count += 1
+
+                    elif line_count == 3:
+                        self.lineEdit_CF3_1.setText(row[0])
+                        self.lineEdit_CF3_2.setText(row[1])
+                        self.lineEdit_CF3_3.setText(row[2])
+                        self.lineEdit_CF3_4.setText(row[3])
+                        self.lineEdit_CF3_5.setText(row[4])
+                        self.lineEdit_CF3_6.setText(row[5])
+                        self.lineEdit_CF3_7.setText(row[6])
+                        self.lineEdit_CF3_8.setText(row[7])
+                        self.lineEdit_CF3_9.setText(row[8])
+                        self.lineEdit_CF3_10.setText(row[9])
+                        line_count += 1
+
+                    else:
+                        print(f'Param1: {row[0]}, Param2: {row[1]}, Param3: {row[2]}, Param4: {row[3]}, Param5: {row[4]},'
+                                f'Param6: {row[5]}, Param7: {row[6]}, Param8: {row[7]}, Param9: {row[8]}, Param10: {row[9]}')
+                        line_count += 1
+
+                print(f'Processed {line_count} lines.')
+
+    #Export Button
+    def on_pb_export_clicked(self):
+        if self.pushBtnClicked:
+            self.pushBtnClicked = False
+            return
+        else:
+            self.pushBtnClicked = True
+
+        path = QFileDialog.getSaveFileName(self, 'Save CSV', os.getenv('HOME'), 'CSV(*.csv)')
+        if path[0] != '':
+            with open(path[0], 'w', newline='', encoding='utf-8') as csv_file:
+                csv_data = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                csv_data.writerow(['PARAM 1', 'PARAM 2', 'PARAM 3', 'PARAM 4', 'PARAM 5',
+                                   'PARAM 6', 'PARAM 7', 'PARAM 8', 'PARAM 9', 'PARAM 10'])
+                csv_data.writerow([self.lineEdit_CF1_1.text(), self.lineEdit_CF1_2.text(), self.lineEdit_CF1_3.text(),
+                                    self.lineEdit_CF1_4.text(), self.lineEdit_CF1_5.text(), self.lineEdit_CF1_6.text(),
+                                    self.lineEdit_CF1_7.text(), self.lineEdit_CF1_8.text(), self.lineEdit_CF1_9.text(),
+                                    self.lineEdit_CF1_10.text()])
+                csv_data.writerow([self.lineEdit_CF2_1.text(), self.lineEdit_CF2_2.text(), self.lineEdit_CF2_3.text(),
+                                    self.lineEdit_CF2_4.text(), self.lineEdit_CF2_5.text(), self.lineEdit_CF2_6.text(),
+                                    self.lineEdit_CF2_7.text(), self.lineEdit_CF2_8.text(), self.lineEdit_CF2_9.text(),
+                                    self.lineEdit_CF2_10.text()])
+                csv_data.writerow([self.lineEdit_CF3_1.text(), self.lineEdit_CF3_2.text(), self.lineEdit_CF3_3.text(),
+                                   self.lineEdit_CF3_4.text(), self.lineEdit_CF3_5.text(), self.lineEdit_CF3_6.text(),
+                                   self.lineEdit_CF3_7.text(), self.lineEdit_CF3_8.text(), self.lineEdit_CF3_9.text(),
+                                   self.lineEdit_CF3_10.text()])
+
 
 
     #SEND CMD BUTTON

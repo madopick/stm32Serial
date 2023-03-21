@@ -2518,6 +2518,32 @@
      </item>
     </layout>
    </widget>
+   <widget class="QPushButton" name="pb_import">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>670</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Import</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pb_export">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>730</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Export</string>
+    </property>
+   </widget>
   </widget>
   <action name="actionAna_Ekran">
    <property name="text">
