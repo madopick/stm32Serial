@@ -21,6 +21,7 @@ import serial.tools.list_ports as port_list
 import argparse
 import pandas as pd
 import csv
+import pathlib
 
 
 result = []
@@ -741,65 +742,109 @@ class qt(QMainWindow):
         else:
             self.pushBtnClicked = True
 
-        path = QFileDialog.getOpenFileName(self, 'Open CSV', os.getenv('HOME'), 'CSV(*.csv)')
+        filter = "CSV (*.csv);;Excel (*.xls, *.xlsx)"
+        path = QFileDialog.getOpenFileName(self, 'Open CSV', os.getenv('HOME'), filter)
+
+        file_extension = pathlib.Path(str(path)).suffix
+        file_extension = file_extension.replace(")", "").replace("'","")
+        print(file_extension)
+
         if path[0] != '':
-            with open(path[0], newline='') as csv_file:
-                csv_reader = csv.reader(csv_file, delimiter=',')
+            if file_extension == '.csv':
+                with open(path[0], newline='') as csv_file:
+                    csv_reader = csv.reader(csv_file, delimiter=',')
 
-                line_count = 0
-                line_config = 0
+                    line_count = 0
+                    for row in csv_reader:
+                        if line_count == 0:
+                            column = ",\t".join(row)
+                            print(f'column are: {column}')
+                            line_count += 1
 
-                for row in csv_reader:
-                    if line_count == 0:
-                        column = ",\t".join(row)
-                        print(f'column are: {column}')
-                        line_count += 1
+                        elif line_count == 1:
+                            self.lineEdit_CF1_1.setText(row[0])
+                            self.lineEdit_CF1_2.setText(row[1])
+                            self.lineEdit_CF1_3.setText(row[2])
+                            self.lineEdit_CF1_4.setText(row[3])
+                            self.lineEdit_CF1_5.setText(row[4])
+                            self.lineEdit_CF1_6.setText(row[5])
+                            self.lineEdit_CF1_7.setText(row[6])
+                            self.lineEdit_CF1_8.setText(row[7])
+                            self.lineEdit_CF1_9.setText(row[8])
+                            self.lineEdit_CF1_10.setText(row[9])
+                            line_count += 1
 
-                    elif line_count == 1:
-                        self.lineEdit_CF1_1.setText(row[0])
-                        self.lineEdit_CF1_2.setText(row[1])
-                        self.lineEdit_CF1_3.setText(row[2])
-                        self.lineEdit_CF1_4.setText(row[3])
-                        self.lineEdit_CF1_5.setText(row[4])
-                        self.lineEdit_CF1_6.setText(row[5])
-                        self.lineEdit_CF1_7.setText(row[6])
-                        self.lineEdit_CF1_8.setText(row[7])
-                        self.lineEdit_CF1_9.setText(row[8])
-                        self.lineEdit_CF1_10.setText(row[9])
-                        line_count += 1
+                        elif line_count == 2:
+                            self.lineEdit_CF2_1.setText(row[0])
+                            self.lineEdit_CF2_2.setText(row[1])
+                            self.lineEdit_CF2_3.setText(row[2])
+                            self.lineEdit_CF2_4.setText(row[3])
+                            self.lineEdit_CF2_5.setText(row[4])
+                            self.lineEdit_CF2_6.setText(row[5])
+                            self.lineEdit_CF2_7.setText(row[6])
+                            self.lineEdit_CF2_8.setText(row[7])
+                            self.lineEdit_CF2_9.setText(row[8])
+                            self.lineEdit_CF2_10.setText(row[9])
+                            line_count += 1
 
-                    elif line_count == 2:
-                        self.lineEdit_CF2_1.setText(row[0])
-                        self.lineEdit_CF2_2.setText(row[1])
-                        self.lineEdit_CF2_3.setText(row[2])
-                        self.lineEdit_CF2_4.setText(row[3])
-                        self.lineEdit_CF2_5.setText(row[4])
-                        self.lineEdit_CF2_6.setText(row[5])
-                        self.lineEdit_CF2_7.setText(row[6])
-                        self.lineEdit_CF2_8.setText(row[7])
-                        self.lineEdit_CF2_9.setText(row[8])
-                        self.lineEdit_CF2_10.setText(row[9])
-                        line_count += 1
+                        elif line_count == 3:
+                            self.lineEdit_CF3_1.setText(row[0])
+                            self.lineEdit_CF3_2.setText(row[1])
+                            self.lineEdit_CF3_3.setText(row[2])
+                            self.lineEdit_CF3_4.setText(row[3])
+                            self.lineEdit_CF3_5.setText(row[4])
+                            self.lineEdit_CF3_6.setText(row[5])
+                            self.lineEdit_CF3_7.setText(row[6])
+                            self.lineEdit_CF3_8.setText(row[7])
+                            self.lineEdit_CF3_9.setText(row[8])
+                            self.lineEdit_CF3_10.setText(row[9])
+                            line_count += 1
 
-                    elif line_count == 3:
-                        self.lineEdit_CF3_1.setText(row[0])
-                        self.lineEdit_CF3_2.setText(row[1])
-                        self.lineEdit_CF3_3.setText(row[2])
-                        self.lineEdit_CF3_4.setText(row[3])
-                        self.lineEdit_CF3_5.setText(row[4])
-                        self.lineEdit_CF3_6.setText(row[5])
-                        self.lineEdit_CF3_7.setText(row[6])
-                        self.lineEdit_CF3_8.setText(row[7])
-                        self.lineEdit_CF3_9.setText(row[8])
-                        self.lineEdit_CF3_10.setText(row[9])
-                        line_count += 1
+                        else:
+                            print(f'Param1: {row[0]}, Param2: {row[1]}, Param3: {row[2]}, Param4: {row[3]}, Param5: {row[4]},'
+                                    f'Param6: {row[5]}, Param7: {row[6]}, Param8: {row[7]}, Param9: {row[8]}, Param10: {row[9]}')
+                            line_count += 1
+                    print(f'Processed {line_count} lines.')
 
-                    else:
-                        print(f'Param1: {row[0]}, Param2: {row[1]}, Param3: {row[2]}, Param4: {row[3]}, Param5: {row[4]},'
-                                f'Param6: {row[5]}, Param7: {row[6]}, Param8: {row[7]}, Param9: {row[8]}, Param10: {row[9]}')
-                        line_count += 1
+            elif file_extension == '.xls' or file_extension == '.xlsx':
+                    print ("xls or xlsx file")
+                    df = pd.read_excel(path[0], sheet_name='1900s', usecols=['Params','Values'])
+                    value = df.values.tolist()
 
-                print(f'Processed {line_count} lines.')
+                    self.lineEdit_CF1_1.setText(str(int(value[0][1])))
+                    self.lineEdit_CF1_2.setText(str(int(value[1][1])))
+                    self.lineEdit_CF1_3.setText(str(int(value[2][1])))
+                    self.lineEdit_CF1_4.setText(str(int(value[3][1])))
+                    self.lineEdit_CF1_5.setText(str(int(value[4][1])))
+                    self.lineEdit_CF1_6.setText(str(int(value[5][1])))
+                    self.lineEdit_CF1_7.setText(str(int(value[6][1])))
+                    self.lineEdit_CF1_8.setText(str(int(value[7][1])))
+                    self.lineEdit_CF1_9.setText(str(int(value[8][1])))
+                    self.lineEdit_CF1_10.setText(str(int(value[9][1])))
+
+                    self.lineEdit_CF2_1.setText(str(int(value[10][1])))
+                    self.lineEdit_CF2_2.setText(str(int(value[11][1])))
+                    self.lineEdit_CF2_3.setText(str(int(value[12][1])))
+                    self.lineEdit_CF2_4.setText(str(int(value[13][1])))
+                    self.lineEdit_CF2_5.setText(str(int(value[14][1])))
+                    self.lineEdit_CF2_6.setText(str(int(value[15][1])))
+                    self.lineEdit_CF2_7.setText(str(int(value[16][1])))
+                    self.lineEdit_CF2_8.setText(str(int(value[17][1])))
+                    self.lineEdit_CF2_9.setText(str(int(value[18][1])))
+                    self.lineEdit_CF2_10.setText(str(int(value[19][1])))
+
+                    self.lineEdit_CF3_1.setText(str(int(value[20][1])))
+                    self.lineEdit_CF3_2.setText(str(int(value[21][1])))
+                    self.lineEdit_CF3_3.setText(str(int(value[22][1])))
+                    self.lineEdit_CF3_4.setText(str(int(value[23][1])))
+                    self.lineEdit_CF3_5.setText(str(int(value[24][1])))
+                    self.lineEdit_CF3_6.setText(str(int(value[25][1])))
+                    self.lineEdit_CF3_7.setText(str(int(value[26][1])))
+                    self.lineEdit_CF3_8.setText(str(int(value[27][1])))
+                    self.lineEdit_CF3_9.setText(str(int(value[28][1])))
+                    self.lineEdit_CF3_10.setText(str(int(value[29][1])))
+
+
 
     #Export Button
     def on_pb_export_clicked(self):
