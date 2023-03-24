@@ -181,7 +181,11 @@ int main(void)
 
 
   /* Infinite loop */
-  printf("init OK\r\n");
+#ifdef MASTER_BOARD
+  printf("Master init OK\r\n");
+#else
+  printf("Slave init OK\r\n");
+#endif
 
   while (1)
   {
@@ -268,12 +272,13 @@ int main(void)
 	  //Process for Blue button handler.
 	  else if (bitFlag & BFLAG_BTN)
 	  {
+		  printf("BlueBTN Pressed\r\n");
+
 //		  char sentMSG[128];
 //		  snprintf(sentMSG, sizeof(sentMSG),"{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
 //				  i32_resCF1[0], i32_resCF1[1], i32_resCF1[2], i32_resCF1[3],
 //				  i32_resCF1[4], i32_resCF1[5], i32_resCF1[6]);
 //		  printf("%s",sentMSG);
-
 //		  printf("CFG1: 100,200,23,-56,90,-4987,10\r\n");
 
 
@@ -285,29 +290,44 @@ int main(void)
 	  //Process for I2C1 Master Transmit & I2C3 Slave Receive.
 	  else if (bitFlag & BFLAG_I2CM_WR)
 	  {
-		  /* SLAVE I2CS3 Receive */
-		  if(HAL_I2C_Slave_Receive_IT(&hi2c3, (uint8_t *)aRxBufferI2C3, RXBUFFERSIZE) != HAL_OK)
+//		  /* SLAVE I2CS3 Receive */
+//		  if(HAL_I2C_Slave_Receive_IT(&hi2c3, (uint8_t *)aRxBufferI2C3, RXBUFFERSIZE) != HAL_OK)
+//		  {
+//			  /* Transfer error in reception process */
+//			  Error_Handler();
+//		  }
+
+
+#ifdef MASTER_BOARD
+		  /* MASTER I2CM1 Transmit */
+		  if(HAL_I2C_Master_Transmit_IT(&hi2c1, (uint16_t)I2C1_ADDRESS, (uint8_t*)aTxBufferI2C1, TXBUFFERSIZE)!= HAL_OK)
 		  {
-			  /* Transfer error in reception process */
 			  Error_Handler();
 		  }
 
+		  while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY )
+		  {
 
-		  /* SLAVE I2CM1 Transmit */
-		  if(HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)I2C3_ADDRESS, (uint8_t*)aTxBufferI2C1, TXBUFFERSIZE, 100)!= HAL_OK)
+		  }
+
+		  /* MASTER I2CM1 Receive */
+		  if(HAL_I2C_Master_Receive_IT(&hi2c1, (uint16_t)I2C1_ADDRESS, (uint8_t*)aRxBufferI2C1, RXBUFFERSIZE)!= HAL_OK)
 		  {
 			  Error_Handler();
 		  }
 
-		  while(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY )
+		  while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY )
 		  {
 
 		  }
 
+		  printf("I2CM1 Received : %s\r\n\n", aRxBufferI2C1);
+
+#endif
 		  bitFlag 	&= ~BFLAG_I2CM_WR;
 
-		  //printf("I2CM1 WR Finish\r\n\n");
-		  bitFlag |= BFLAG_I2CM_RD;
+		  printf("I2CM1 WR Finish\r\n\n");
+		  //bitFlag |= BFLAG_I2CM_RD;
 
 	  }
 	  //Process for I2C1 Master Receive & I2C3 Slave Transmit.
@@ -357,6 +377,34 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_BUFFCOM;
 	  }
+	  else
+	  {
+
+#ifndef MASTER_BOARD
+		  /* SLAVE I2CM1 Receive */
+		  if(HAL_I2C_Slave_Receive_IT(&hi2c1, (uint8_t*)aRxBufferI2C1, RXBUFFERSIZE)!= HAL_OK)
+		  {
+			  Error_Handler();
+		  }
+
+		  while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY )
+		  {
+
+		  }
+
+		  /* SLAVE I2CM1 Transmit */
+		  if(HAL_I2C_Slave_Transmit_IT(&hi2c1, (uint8_t*)aRxBufferI2C1, TXBUFFERSIZE)!= HAL_OK)
+		  {
+			  Error_Handler();
+		  }
+
+		  while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY )
+		  {
+
+		  }
+#endif
+
+	  }
 
   }
 }
@@ -373,7 +421,7 @@ void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
 	if (I2cHandle == &hi2c1)
 	{
-		//printf("I2C1 TX OK\r\n");
+		printf("I2C1 TX OK\r\n");
 	}
 	else if (I2cHandle == &hi2c3)
 	{
@@ -388,6 +436,7 @@ void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 	{
 		/* Turn LED2 on: Transfer in transmission process is correct */
 		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+		printf("I2C1 TX OK \r\n");
 	}
 	else if (I2cHandle == &hi2c3)
 	{
@@ -411,10 +460,13 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 	{
 		/* Turn LED2 on: Transfer in reception process is correct */
 		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-		bitFlag 	|= BFLAG_BUFFCOM;
+		printf("I2C1 RX: %s \r\n", aRxBufferI2C3);
+
+		//bitFlag 	|= BFLAG_BUFFCOM;
 	}
 	else if  (I2cHandle == &hi2c3)
 	{
+		printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
 		//printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
 	}
 }
@@ -425,10 +477,11 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 	{
 		/* Turn LED2 on: Transfer in reception process is correct */
 		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+		printf("I2C1 RX: %s \r\n", aRxBufferI2C3);
 	}
 	else if  (I2cHandle == &hi2c3)
 	{
-		//printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
+		printf("I2C3 RX: %s \r\n", aRxBufferI2C3);
 	}
 }
 

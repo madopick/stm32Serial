@@ -160,9 +160,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>240</y>
+      <y>150</y>
       <width>231</width>
-      <height>221</height>
+      <height>311</height>
      </rect>
     </property>
     <property name="verticalScrollBarPolicy">
@@ -936,7 +936,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>200</y>
+      <y>120</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -960,7 +960,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Write Config1</string>
+     <string>Write Config 1</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pb_cfg1_rd">
@@ -973,16 +973,16 @@
      </rect>
     </property>
     <property name="text">
-     <string>Read Config1</string>
+     <string>Read Config 1</string>
     </property>
    </widget>
    <widget class="QScrollArea" name="scrollArea_2">
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>240</y>
+      <y>150</y>
       <width>231</width>
-      <height>221</height>
+      <height>311</height>
      </rect>
     </property>
     <property name="verticalScrollBarPolicy">
@@ -1756,7 +1756,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>200</y>
+      <y>120</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -1780,7 +1780,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Write Config2</string>
+     <string>Write Config 2</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pb_cfg2_rd">
@@ -1793,16 +1793,16 @@
      </rect>
     </property>
     <property name="text">
-     <string>Read Config2</string>
+     <string>Read Config 2</string>
     </property>
    </widget>
    <widget class="QScrollArea" name="scrollArea_3">
     <property name="geometry">
      <rect>
       <x>570</x>
-      <y>240</y>
+      <y>150</y>
       <width>231</width>
-      <height>221</height>
+      <height>311</height>
      </rect>
     </property>
     <property name="verticalScrollBarPolicy">
@@ -2331,7 +2331,7 @@
     <property name="geometry">
      <rect>
       <x>570</x>
-      <y>200</y>
+      <y>120</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -2355,7 +2355,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Write Config2</string>
+     <string>Write Config 3</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pb_cfg3_rd">
@@ -2368,7 +2368,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Read Config2</string>
+     <string>Read Config 3</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_4">
