@@ -22,11 +22,17 @@ import argparse
 import pandas as pd
 import csv
 import pathlib
+import resources
+
 
 
 result = []
 portindex = 0
 
+
+###########################################################################################################
+# Serial Port Checks
+###########################################################################################################
 def serial_ports():
     global portindex
 
@@ -57,6 +63,10 @@ def serial_ports():
     return result
 
 
+
+###########################################################################################################
+# UART RX Thread.
+###########################################################################################################
 class Worker(QObject):
     finished = pyqtSignal()
     intReady = pyqtSignal(str)
@@ -95,8 +105,13 @@ class Worker(QObject):
 
         self.finished.emit()
 
-class qt(QMainWindow):
 
+
+
+###########################################################################################################
+# QT Main
+###########################################################################################################
+class qt(QMainWindow):
     def __init__(self):
 
         QMainWindow.__init__(self)
@@ -168,9 +183,10 @@ class qt(QMainWindow):
         self.cb_baudrate.addItem("230400")
         self.cb_baudrate.setCurrentIndex(3)
 
-        print('QT init')
 
+    ###########################################################################################################
     # WRITE CF1 array values
+    ##########################################################################################################
     def send_cfg1(self):
         print("send cfg1")
         if self.ConnectStatus == 0:
@@ -197,7 +213,9 @@ class qt(QMainWindow):
         ser.write(cfg1text.encode())
         self.pushBtnClicked = True
 
+    ###########################################################################################################
     # WRITE CF2 array values
+    ###########################################################################################################
     def send_cfg2(self):
         print("send cfg2")
         if self.ConnectStatus == 0:
@@ -224,6 +242,9 @@ class qt(QMainWindow):
         ser.write(cfg2text.encode())
         self.pushBtnClicked = True
 
+    ###########################################################################################################
+    # WRITE CF3 array values
+    ###########################################################################################################
     def send_cfg3(self):
         print("send cfg3")
         if self.ConnectStatus == 0:
@@ -250,7 +271,10 @@ class qt(QMainWindow):
         ser.write(cfg3text.encode())
         self.pushBtnClicked = True
 
-    #READ CF1 array values
+
+    ###########################################################################################################
+    # READ CF1 array values
+    ###########################################################################################################
     def read_cfg1(self):
         print("read cfg1")
         if self.ConnectStatus == 0:
@@ -266,7 +290,9 @@ class qt(QMainWindow):
         ser.write(cfg1text.encode())
         self.pushBtnClicked = True
 
+    ###########################################################################################################
     # READ CF2 array values
+    ###########################################################################################################
     def read_cfg2(self):
         print("read cfg2")
         if self.ConnectStatus == 0:
@@ -282,6 +308,9 @@ class qt(QMainWindow):
         ser.write(cfg2text.encode())
         self.pushBtnClicked = True
 
+    ###########################################################################################################
+    # READ CF3 array values
+    ###########################################################################################################
     def read_cfg3(self):
         print("read cfg3")
         if self.ConnectStatus == 0:
@@ -297,9 +326,19 @@ class qt(QMainWindow):
         ser.write(cfg3text.encode())
         self.pushBtnClicked = True
 
+
+
+    ###########################################################################################################
+    # UART LOOP FINISH
+    ###########################################################################################################
     def loop_finished(self):
         print('Loop Finished')
 
+
+
+    ###########################################################################################################
+    # Clear Config when disconnect
+    ###########################################################################################################
     def clear_disconnect(self):
         self.lineEdit_CF1_1.clear()
         self.lineEdit_CF1_2.clear()
@@ -343,6 +382,10 @@ class qt(QMainWindow):
         self.textEdit_3.setTextColor(blackColor)
 
 
+
+    ###########################################################################################################
+    # Stop UART RX Loop.
+    ###########################################################################################################
     def stop_loop(self):
         print('stop loop')
         self.worker.working = False
@@ -350,6 +393,10 @@ class qt(QMainWindow):
         self.label_5.setStyleSheet('color: red')
         ser.close()
 
+
+    ###########################################################################################################
+    # Start UART RX Loop
+    ###########################################################################################################
     def start_loop(self):
         print('start loop')
         global ser
@@ -426,7 +473,9 @@ class qt(QMainWindow):
         else:
             print("USB Thread here")
 
-    #Parse incoming uart msg from STM32
+    ###########################################################################################################
+    # Parse incoming uart msg from STM32
+    ###########################################################################################################
     def parseSerialMsg(self, str):
         # print(str)
 
@@ -440,7 +489,10 @@ class qt(QMainWindow):
         return result
 
 
+
+    ###########################################################################################################
     # Serial (in bytes) Receiving Packets
+    ###########################################################################################################
     def onByteReady(self, data):
         #print("onByteReady")
         #print(data)
@@ -494,7 +546,10 @@ class qt(QMainWindow):
             self.lineEdit_CF3_10.setText(str(int_val[29]))
 
 
-    #Serial (in utf-8) Receiving Packets
+
+    ###########################################################################################################
+    # Serial (in utf-8) Receiving Packets
+    ###########################################################################################################
     def onIntReady(self, i):
         print('SerialRead')
 
@@ -565,7 +620,9 @@ class qt(QMainWindow):
                     self.lineEdit_CF3_9.setText(self.values[8])
                     self.lineEdit_CF3_10.setText(self.values[9])
 
+    ###########################################################################################################
     # Get CF1 Form Value in byte
+    ###########################################################################################################
     def getCF1values_inbytes(self):
         returnByte = bytearray()
 
@@ -601,7 +658,9 @@ class qt(QMainWindow):
 
         return returnByte
 
+    ###########################################################################################################
     # Get CF2 Form Value in byte
+    ###########################################################################################################
     def getCF2values_inbytes(self):
         returnByte = bytearray()
 
@@ -637,7 +696,10 @@ class qt(QMainWindow):
 
         return returnByte
 
-    #Get CF3 Form Value in byte
+
+    ###########################################################################################################
+    # Get CF3 Form Value in byte
+    ###########################################################################################################
     def getCF3values_inbytes(self):
         returnByte = bytearray()
 
@@ -673,8 +735,9 @@ class qt(QMainWindow):
 
         return returnByte
 
-
+    ###########################################################################################################
     # TXT Save
+    ###########################################################################################################
     def on_pushButton_5_clicked(self):
         if self.pushBtnClicked:
             self.pushBtnClicked = False
@@ -701,7 +764,11 @@ class qt(QMainWindow):
 
         self.textEdit_3.setText('')
 
-    #Clear UART console history
+
+
+    ###########################################################################################################
+    # Clear UART console history
+    ###########################################################################################################
     def on_pb_Clr_clicked(self):
         if self.pushBtnClicked:
             self.pushBtnClicked = False
@@ -709,7 +776,10 @@ class qt(QMainWindow):
 
         self.textEdit_3.setText('')
 
+
+    ###########################################################################################################
     # READ CMD BUTTON
+    ###########################################################################################################
     def on_pushButton_4_clicked(self):
         print('Read All Value')
 
@@ -734,7 +804,11 @@ class qt(QMainWindow):
         ser.write(mytext.encode())
         self.pushBtnClicked = True
 
-    #IMPORT button
+
+
+    ###########################################################################################################
+    # IMPORT BUTTON
+    ###########################################################################################################
     def on_pb_import_clicked(self):
         if self.pushBtnClicked:
             self.pushBtnClicked = False
@@ -846,7 +920,10 @@ class qt(QMainWindow):
 
 
 
-    #Export Button
+
+    ###########################################################################################################
+    # Export BUTTON
+    ###########################################################################################################
     def on_pb_export_clicked(self):
         if self.pushBtnClicked:
             self.pushBtnClicked = False
@@ -873,9 +950,9 @@ class qt(QMainWindow):
                                    self.lineEdit_CF3_7.text(), self.lineEdit_CF3_8.text(), self.lineEdit_CF3_9.text(),
                                    self.lineEdit_CF3_10.text()])
 
-
-
-    #SEND CMD BUTTON
+    ###########################################################################################################
+    # SEND CMD BUTTON
+    ###########################################################################################################
     def on_pushButton_3_clicked(self):
         print('Send to serial')
 
@@ -888,7 +965,7 @@ class qt(QMainWindow):
             return
 
         #if text edit is empty then send write command to update CF3 using byte methods
-        if self.textEdit_2.toPlainText() == '':
+        if self.textEdit_cmd1.toPlainText() == '':
             msgBox = QMessageBox()
             msgBox.setWindowTitle("Warning!!!")
             msgBox.setIcon(QMessageBox.Warning)
@@ -910,7 +987,7 @@ class qt(QMainWindow):
         #send input command by user in text edit 2
         #Available command are: {MSG:, {CF1:, {CF2:, {CF3:, {CFA:, {RD1}, {RD2}, {RD3}, {RD4}, {RDA}
         else:
-            mytext = self.textEdit_2.toPlainText() + "\r\n"
+            mytext = self.textEdit_cmd1.toPlainText() + "\r\n"
 
             blueColor = QColor(0, 0, 255)
             self.textEdit_3.setTextColor(blueColor)
@@ -922,6 +999,11 @@ class qt(QMainWindow):
 
         self.pushBtnClicked = True
 
+
+
+##################################################################################################
+# QT RUN
+##################################################################################################
 def run():
     app = QApplication(sys.argv)
     widget = qt()
