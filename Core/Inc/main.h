@@ -62,6 +62,8 @@ void uartProcessing (uint8_t *u8p_buffer, uint16_t u16_size);
 #define BFLAG_WR3								 	(1 << 11)
 #define BFLAG_RDA								 	(1 << 12)
 #define BFLAG_BUFFCOM								(1 << 13)
+#define BFLAG_SPI_SLAVE_WR							(1 << 14)
+#define BFLAG_SPI_SLAVE_RD							(1 << 15)
 
 
 
@@ -80,6 +82,13 @@ typedef enum
 	RDALL_HEADER,
 } eREQ_HEADER_t;
 
+
+typedef enum
+{
+    SPIS_RD_ONLY,
+    SPIS_WR_ONLY,
+    SPIS_RD_WR
+} eSPIS_MODE_t;
 
 
 /* I2C */

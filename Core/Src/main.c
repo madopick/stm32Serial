@@ -33,6 +33,8 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c3;
+SPI_HandleTypeDef hspi2;
+SPI_HandleTypeDef hspi3;
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -40,6 +42,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_SPI2_Init(void);
+static void MX_SPI3_Init(void);
 static uint16_t Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength);
 
 
@@ -62,6 +66,21 @@ static uint8_t u8arr_uartEvent[UART_BUF_SZ];
 
 static uint16_t u16_oldPos = 0;
 static uint16_t u16_lenCnt = 0;
+
+volatile uint8_t spi2F, spi3F;
+
+
+
+/* SPI TX & RX Buffer */
+uint8_t aSPI2TxBuffer[] = "MSTER SEND";
+uint8_t aSPI3TxBuffer[] = "SLAVE SEND";
+
+/* Buffer used for reception */
+uint8_t aSPI2RxBuffer[10];
+uint8_t aSPI3RxBuffer[10];
+
+eSPIS_MODE_t eSPISmode = SPIS_RD_ONLY;
+
 
 
 /**********************************************************
@@ -180,17 +199,45 @@ int main(void)
   }
 
 
+  /* INIT SPI */
+  MX_SPI2_Init();
+  MX_SPI3_Init();
+
+
+
   /* Infinite loop */
 #ifdef MASTER_BOARD
-  printf("Master init OK\r\n");
+  printf("\r\n==== F446RE Master init OK ====\r\n");
 #else
   printf("Slave init OK\r\n");
 #endif
 
+  /* SPIS Mode Init */
+  spi2F = 0;
+  spi3F = 0;
+
+  if ((eSPISmode == SPIS_RD_ONLY) ||  (eSPISmode == SPIS_RD_WR))
+  {
+	  if(HAL_SPI_Receive_IT(&hspi3, (uint8_t *)aSPI3RxBuffer, sizeof(aSPI3RxBuffer)) != HAL_OK)
+	  {
+		  /* Transfer error in transmission process */
+		  Error_Handler();
+	  }
+  }
+  else if (eSPISmode == SPIS_WR_ONLY)
+  {
+	  if(HAL_SPI_Transmit_IT(&hspi3, (uint8_t *)aSPI3TxBuffer, sizeof(aSPI3TxBuffer)) != HAL_OK)
+	  {
+		  /* Transfer error in transmission process */
+		  Error_Handler();
+	  }
+  }
+
+
+  /* main loop */
   while (1)
   {
-	  //UART Receiving Process.
-	  if (bitFlag & BFLAG_UART_RCV)
+	  if (bitFlag & BFLAG_UART_RCV)																	//UART Receiving Process.
 	  {
 		  uartProcessing (u8arr_uartEvent, u16_lenCnt - 2); // remove \r & \n
 		  memset(u8arr_uartEvent, 0, UART_BUF_SZ);
@@ -198,8 +245,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_UART_RCV;
 	  }
-	  //Process for Config 1 Value Read.
-	  else if (bitFlag & BFLAG_RD1)
+	  else if (bitFlag & BFLAG_RD1)																	//Process for Config 1 Value Read.
 	  {
 		  memset (sendStr, 0, STRLENMAX);
 		  snprintf(sendStr, STRLENMAX, "{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
@@ -209,8 +255,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RD1;
 	  }
-	  //Process for Config 2 Value Read.
-	  else if (bitFlag & BFLAG_RD2)
+	  else if (bitFlag & BFLAG_RD2)																	//Process for Config 2 Value Read.
 	  {
 		  memset (sendStr, 0, STRLENMAX);
 		  snprintf(sendStr, STRLENMAX, "{CF2:%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
@@ -220,8 +265,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RD2;
 	  }
-	  //Process for Config 3 Value Read.
-	  else if (bitFlag & BFLAG_RD3)
+	  else if (bitFlag & BFLAG_RD3)																	//Process for Config 3 Value Read.
 	  {
 		  memset (sendStr, 0, STRLENMAX);
 		  snprintf(sendStr, STRLENMAX, "{CF3:%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
@@ -231,8 +275,7 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RD3;
 	  }
-	  //Process for All Config Value Read.
-	  else if (bitFlag & BFLAG_RDA)
+	  else if (bitFlag & BFLAG_RDA)																	//Process for All Config Value Read.
 	  {
 		  /* use byte array stream */
 		  //printf("send byte array\r\n");
@@ -248,31 +291,27 @@ int main(void)
 
 		  bitFlag 	&= ~BFLAG_RDA;
 	  }
-	  //Process for Config 1 Value Write.
-	  else if (bitFlag & BFLAG_WR1)
+	  else if (bitFlag & BFLAG_WR1)																	//Process for Config 1 Value Write.
 	  {
 
 
 		  bitFlag 	&= ~BFLAG_WR1;
 	  }
-	  //Process for Config 2 Value Write.
-	  else if (bitFlag & BFLAG_WR2)
+	  else if (bitFlag & BFLAG_WR2)																	//Process for Config 2 Value Write.
 	  {
 
 
 		  bitFlag 	&= ~BFLAG_WR2;
 	  }
-	  //Process for Config 3 Value Write.
-	  else if (bitFlag & BFLAG_WR3)
+	  else if (bitFlag & BFLAG_WR3)																	//Process for Config 3 Value Write.
 	  {
 
 
 		  bitFlag 	&= ~BFLAG_WR3;
 	  }
-	  //Process for Blue button handler.
-	  else if (bitFlag & BFLAG_BTN)
+	  else if (bitFlag & BFLAG_BTN)																	//Process for Blue button handler.
 	  {
-		  printf("BlueBTN Pressed\r\n");
+		  printf("\r\nBlueBTN Pressed\r\n");
 
 //		  char sentMSG[128];
 //		  snprintf(sentMSG, sizeof(sentMSG),"{CF1:%ld,%ld,%ld,%ld,%ld,%ld,%ld}",
@@ -282,13 +321,87 @@ int main(void)
 //		  printf("CFG1: 100,200,23,-56,90,-4987,10\r\n");
 
 
+
+
+		  //bitFlag 	|= BFLAG_I2CM_WR;
+
+
+		  /* SPIS mode selection */
+		  HAL_SPI_DeInit(&hspi3);
+		  MX_SPI3_Init();
+		  while(HAL_SPI_GetState(&hspi3) != HAL_SPI_STATE_READY){}
+		  spi3F = 0;
+
+		  if (eSPISmode == SPIS_RD_WR)
+		  {
+			  eSPISmode = SPIS_RD_ONLY;
+			  if(HAL_SPI_Receive_IT(&hspi3, (uint8_t*)aSPI3RxBuffer, 10) != HAL_OK)
+			  {
+				 /* Transfer error in transmission process */
+				 Error_Handler();
+			  }
+			  printf("SPIS Read Only\r\n");
+		  }
+		  else if(eSPISmode == SPIS_RD_ONLY)
+		  {
+			  eSPISmode = SPIS_WR_ONLY;
+			  if(HAL_SPI_Transmit_IT(&hspi3, (uint8_t*)aSPI3TxBuffer, 10) != HAL_OK)
+			  {
+				 /* Transfer error in transmission process */
+				 Error_Handler();
+			  }
+			  printf("SPIS Write Only\r\n");
+		  }
+		  else
+		  {
+			  eSPISmode = SPIS_RD_WR;
+			  if(HAL_SPI_Receive_IT(&hspi3, (uint8_t*)aSPI3RxBuffer, 10) != HAL_OK)
+			  {
+				 /* Transfer error in transmission process */
+				 Error_Handler();
+			  }
+			  printf("SPIS Read Write \r\n");
+		  }
+
+
 		  HAL_Delay(500);
 		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 		  bitFlag 	&= ~BFLAG_BTN;
-		  bitFlag 	|= BFLAG_I2CM_WR;
+
 	  }
-	  //Process for I2C1 Master Transmit & I2C3 Slave Receive.
-	  else if (bitFlag & BFLAG_I2CM_WR)
+	  else if (bitFlag & BFLAG_SPI_SLAVE_WR)														//SPI SLAVE Write.
+	  {
+		  /******************** transmit *******************************/
+		  spi3F = 0;
+
+		  if(HAL_SPI_Transmit_IT(&hspi3, (uint8_t*)aSPI3TxBuffer, 10) != HAL_OK)
+		  {
+			 /* Transfer error in transmission process */
+			 Error_Handler();
+		  }
+
+		  bitFlag 	&= ~BFLAG_SPI_SLAVE_WR;
+	  }
+	  else if (bitFlag & BFLAG_SPI_SLAVE_RD)														//SPI SLAVE Read.
+	  {
+		  /***************** receive *******************************/
+		  printf("SPI3 RX: %s\r\n\n", aSPI3RxBuffer);
+		  printf("SPI3 Receiving...\r\n");
+		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+		  memset(aSPI3RxBuffer, 0, sizeof(aSPI3RxBuffer));
+
+		  spi3F = 0;
+		  while(HAL_SPI_GetState(&hspi3) != HAL_SPI_STATE_READY){}
+
+		  if(HAL_SPI_Receive_IT(&hspi3, (uint8_t*)aSPI3RxBuffer, 10) != HAL_OK)
+		  {
+			 /* Transfer error in transmission process */
+			 Error_Handler();
+		  }
+
+		  bitFlag 	&= ~BFLAG_SPI_SLAVE_RD;
+	  }
+	  else if (bitFlag & BFLAG_I2CM_WR)																//Process for I2C1 Master Transmit & I2C3 Slave Receive.
 	  {
 //		  /* SLAVE I2CS3 Receive */
 //		  if(HAL_I2C_Slave_Receive_IT(&hi2c3, (uint8_t *)aRxBufferI2C3, RXBUFFERSIZE) != HAL_OK)
@@ -330,8 +443,7 @@ int main(void)
 		  //bitFlag |= BFLAG_I2CM_RD;
 
 	  }
-	  //Process for I2C1 Master Receive & I2C3 Slave Transmit.
-	  else if (bitFlag & BFLAG_I2CM_RD)
+	  else if (bitFlag & BFLAG_I2CM_RD)															//Process for I2C1 Master Receive & I2C3 Slave Transmit.
 	  {
 		  while((HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY ) &&
 				(HAL_I2C_GetState(&hi2c3) != HAL_I2C_STATE_READY ))
@@ -357,8 +469,7 @@ int main(void)
 		  bitFlag 	&= ~BFLAG_I2CM_RD;
 
 	  }
-	  //Process for Master Transmite & Receive Buffer  comparison .
-	  else if (bitFlag & BFLAG_BUFFCOM)
+	  else if (bitFlag & BFLAG_BUFFCOM)															//Process for Master Transmite & Receive Buffer  comparison .
 	  {
 		  printf("I2C1 RX: %s \r\n", aRxBufferI2C1);
 
@@ -567,8 +678,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
+  /** Initializes the CPU, AHB and APB buses clocks */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -667,6 +777,179 @@ static void MX_GPIO_Init(void)
 }
 
 
+
+//============================================= SPI Setup ========================================//
+
+/*******************************************************************
+  * @brief  TxRx Transfer completed callback.
+  * @param  hspi: SPI handle
+  * @retval None
+  *****************************************************************/
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	if (hspi->Instance==SPI2)
+	{
+		//bitFlag |= BFLAG_SPIM_WR;
+		//printf("SPI2 CB\r\n");
+	}
+	else if (hspi->Instance==SPI3)
+	{
+		//bitFlag |= BFLAG_SPIS_WR;
+		//printf("SPI3 CB\r\n");
+	}
+
+
+}
+
+/*******************************************************************
+  * @brief  Tx Transfer completed callback.
+  * @param  hspi: SPI handle
+  * @retval None
+  *****************************************************************/
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	if (hspi->Instance==SPI2)
+	{
+		spi2F = 1;
+		printf("SPI2 TX CB\r\n");
+	}
+	else if (hspi->Instance==SPI3)
+	{
+		spi3F = 1;
+
+		if (eSPISmode == SPIS_WR_ONLY)
+		{
+			bitFlag 	|= BFLAG_SPI_SLAVE_WR;
+		}
+		else
+		{
+			bitFlag 	|= BFLAG_SPI_SLAVE_RD;
+		}
+		printf("SPI3 TX CB\r\n");
+	}
+}
+
+
+/*******************************************************************
+  * @brief  Rx Transfer completed callback.
+  * @param  hspi: SPI handle
+  * @retval None
+  *****************************************************************/
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	if (hspi->Instance==SPI2)
+	{
+		//bitFlag |= BFLAG_SPIS_WR;
+		spi2F = 1;
+		printf("SPI2 RX CB\r\n");
+	}
+	else if (hspi->Instance==SPI3)
+	{
+		spi3F = 1;
+
+		if ((eSPISmode == SPIS_RD_WR) || (eSPISmode == SPIS_WR_ONLY))
+		{
+			bitFlag 	|= BFLAG_SPI_SLAVE_WR;
+		}
+		else
+		{
+			bitFlag 	|= BFLAG_SPI_SLAVE_RD;
+		}
+
+		printf("SPI3 RX CB\r\n");
+	}
+}
+
+
+
+/********************************************************************
+  * @brief  SPI error callbacks.
+  * @param  hspi: SPI handle
+  * @note   This example shows a simple way to report transfer error, and you can
+  *         add your own implementation.
+  * @retval None
+  *******************************************************************/
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
+{
+	uint8_t spiNum;
+
+	if (hspi->Instance==SPI2)
+	{
+		spiNum=2;
+	}
+	else if (hspi->Instance==SPI3)
+	{
+		spiNum=3;
+	}
+
+	while (1)
+	{
+		printf("SPI Error %d - %ld\r\n",spiNum, hspi->ErrorCode);
+		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+		HAL_Delay(500);
+	}
+}
+
+
+
+
+
+/*****************************************************
+  * @brief SPI2 Initialization Function (Master)
+  * @param None
+  * @retval None
+  ****************************************************/
+static void MX_SPI2_Init(void)
+{
+  hspi2.Instance 				= SPI2;
+  hspi2.Init.Mode 				= SPI_MODE_MASTER;
+  hspi2.Init.Direction 			= SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize 			= SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity 		= SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase 			= SPI_PHASE_1EDGE;
+  hspi2.Init.NSS 				= SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler 	= SPI_BAUDRATEPRESCALER_256;
+  hspi2.Init.FirstBit 			= SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode 			= SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation 	= SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial 		= 10;
+
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
+
+/*****************************************************
+  * @brief SPI3 Initialization Function (Slave)
+  * @param None
+  * @retval None
+  ****************************************************/
+static void MX_SPI3_Init(void)
+{
+  hspi3.Instance 				= SPI3;
+  hspi3.Init.Mode 				= SPI_MODE_SLAVE;
+  hspi3.Init.Direction 			= SPI_DIRECTION_2LINES;
+  hspi3.Init.DataSize 			= SPI_DATASIZE_8BIT;
+  hspi3.Init.CLKPolarity 		= SPI_POLARITY_LOW;
+  hspi3.Init.CLKPhase 			= SPI_PHASE_1EDGE;
+  hspi3.Init.NSS 				= SPI_NSS_SOFT;
+  hspi3.Init.FirstBit 			= SPI_FIRSTBIT_MSB;
+  hspi3.Init.TIMode 			= SPI_TIMODE_DISABLE;
+  hspi3.Init.CRCCalculation 	= SPI_CRCCALCULATION_DISABLE;
+  hspi3.Init.CRCPolynomial 		= 10;
+
+  if (HAL_SPI_Init(&hspi3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+
+
+
+//======================================= End Of SPI ================================================//
 
 
 /*********************************************************************
