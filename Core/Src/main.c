@@ -79,7 +79,7 @@ uint8_t aSPI3TxBuffer[] = "SLAVE SEND";
 uint8_t aSPI2RxBuffer[10];
 uint8_t aSPI3RxBuffer[10];
 
-eSPIS_MODE_t eSPISmode = SPIS_RD_ONLY;
+eSPIS_MODE_t eSPISmode = SPIS_RD_WR;
 
 
 
@@ -880,14 +880,34 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 	else if (hspi->Instance==SPI3)
 	{
 		spiNum=3;
+
+		HAL_SPI_DeInit(&hspi3);
+		MX_SPI3_Init();
+
+		if ((eSPISmode == SPIS_RD_WR) || (eSPISmode == SPIS_RD_ONLY))
+		{
+		  if(HAL_SPI_Receive_IT(&hspi3, (uint8_t*)aSPI3RxBuffer, 10) != HAL_OK)
+		  {
+			 /* Transfer error in transmission process */
+			 Error_Handler();
+		  }
+		}
+		else
+		{
+		  if(HAL_SPI_Transmit_IT(&hspi3, (uint8_t*)aSPI3TxBuffer, 10) != HAL_OK)
+		  {
+			 /* Transfer error in transmission process */
+			 Error_Handler();
+		  }
+		}
 	}
 
-	while (1)
-	{
+//	while (1)
+//	{
 		printf("SPI Error %d - %ld\r\n",spiNum, hspi->ErrorCode);
 		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-		HAL_Delay(500);
-	}
+//		HAL_Delay(500);
+//	}
 }
 
 
